@@ -26,12 +26,15 @@ def __prepare_table():
 __connection : sqlite3.Connection = __get_connection()
 __prepare_table()
     
-def get_downloads_by_url(url : str):
+def __get_downloads_by_url(url : str):
     cursor = __connection.cursor()
     cursor.execute("SELECT * FROM downloads WHERE download_url = ?", (url,))
     rows = cursor.fetchall()
     cursor.close()
     return rows
+
+def has_been_downloaded(url : str) -> bool:
+    return len(__get_downloads_by_url(url)) > 0
 
 def store_download_url(url : str):
     tuple = (url, datetime.datetime.now())

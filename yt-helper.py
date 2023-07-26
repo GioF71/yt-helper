@@ -91,7 +91,7 @@ def stream_format_filter(stream_list_desc : list[Stream], subtype : str) -> list
             filtered.append(current)
     return filtered
 
-def select_best(yt : YouTube) -> Stream:
+def select_stream(yt : YouTube) -> Stream:
     stream_list : list[Stream] = list_streams(yt)
     stream_list = stream_res_filter(stream_list, get_max_resolution())
     stream_list = stream_format_filter(stream_list, get_subtype())
@@ -111,6 +111,37 @@ def store_tags(yt : YouTube, stream : Stream, file_path : str):
         tags["\\xa9day"] = str(yt.publish_date.year)
         tags.save(file_path)
 
+def process_url(url : str):
+    if not persistence.has_been_downloaded(url):
+        yt : YouTube = YouTube(url)
+        title = yt.title
+        author = yt.author
+        publish_date = yt.publish_date
+        print(f"Downloading [{title}] by [{author}] on [{publish_date}]...")
+        stream : Stream = select_stream(yt)
+        if stream:
+            print(f"Selected format: res:{stream.resolution} subtype:{stream.subtype} video_codec:{stream.video_codec} audio_codec:{stream.audio_codec}")
+            # Download if not exists
+            #video_filename : str = stream.default_filename
+            video_filename : str = f"{author} - {title}.{stream.subtype}"
+            full_filename_path : str = os.path.join(get_output_path(), video_filename)
+            file_path : str = None
+            if os.path.exists(full_filename_path):
+                print(f"File already exists [{full_filename_path}] for url [{url}]")
+            else:
+                file_path : str = stream.download(
+                    output_path = get_output_path(), 
+                    filename = video_filename)
+                full_filename_path = file_path
+            # store tags
+            store_tags(yt, stream, full_filename_path)
+            # save url to db
+            persistence.store_download_url(url)
+        else:
+            print(f"ERROR: Could not find a matching stream for [{url}]")
+    else:
+        print(f"Already downloaded [{url}]")
+
 def main():
     playlist_url : str = os.getenv("PLAYLIST_URL")
     if not playlist_url:
@@ -123,29 +154,7 @@ def main():
     url : str
     for url in url_list:
         print(f"Found url [{url}]")
-        rows = persistence.get_downloads_by_url(url)
-        if not rows:
-            yt : YouTube = YouTube(url)
-            #sq : StreamQuery = yt.streams.order_by("resolution")
-            #stream : Stream = sq.last if not max_resolution else select_best(yt)
-            stream : Stream = select_best(yt)
-            if stream:
-                print(f"Selected format: res:{stream.resolution} subtype:{stream.subtype} video_codec:{stream.video_codec} audio_codec:{stream.audio_codec}")
-                # Download if not exists
-                default_filename : str = stream.default_filename
-                full_filename_path : str = os.path.join(get_output_path(), default_filename)
-                file_path : str = None
-                if os.path.exists(full_filename_path):
-                    print("File already exists [{full_filename_path}] for url [{url}]")
-                else:
-                    file_path : str = stream.download(output_path = get_output_path())
-                    full_filename_path = file_path
-                # store tags
-                store_tags(yt, stream, full_filename_path)
-                # save url to db
-                persistence.store_download_url(url)
-            else:
-                print(f"ERROR: Could not find a matching stream for [{url}]")
+        process_url(url)
 
 if __name__ == '__main__':
     main()
