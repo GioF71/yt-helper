@@ -112,7 +112,6 @@ def store_tags(yt : YouTube, stream : Stream, file_path : str):
         tags.save(file_path)
 
 def main():
-    persistence.prepare_table()
     playlist_url : str = os.getenv("PLAYLIST_URL")
     if not playlist_url:
         print("No playlist specified")

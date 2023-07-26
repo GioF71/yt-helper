@@ -12,9 +12,7 @@ def __get_connection() -> sqlite3.Connection:
             sqlite3.PARSE_COLNAMES)
     return connection
 
-__connection : sqlite3.Connection = __get_connection()
-
-def prepare_table():
+def __prepare_table():
     cursor_obj = __connection.cursor()
     # Creating table
     create_downloads_table : str = """
@@ -24,6 +22,9 @@ def prepare_table():
     """
     cursor_obj.execute(create_downloads_table)
     cursor_obj.close()
+
+__connection : sqlite3.Connection = __get_connection()
+__prepare_table()
     
 def get_downloads_by_url(url : str):
     cursor = __connection.cursor()
