@@ -6,6 +6,8 @@ import time
 import persistence
 
 from resolution import Resolution
+
+import yt_dlp
 from pytube import YouTube, Playlist, StreamQuery, Stream
 from pytube.exceptions import AgeRestrictedError
 from mutagen.mp4 import MP4, MP4MetadataError
@@ -123,42 +125,68 @@ def store_tags(yt : YouTube, stream : Stream, file_path : str):
         tags["\\xa9day"] = str(yt.publish_date.year)
         tags.save(file_path)
 
+def yt_dlp_monitor(d):
+    status = d["status"]
+    if status == "finished":
+        file_name : str = d["filename"]
+        print(f"Status [{status}] FileName [{file_name}]")
+
+class MyCustomPP(yt_dlp.postprocessor.PostProcessor):
+    def run(self, info):
+        self.to_screen('Doing stuff')
+        return [], info
+
 def process_url(url : str):
     if not persistence.has_been_downloaded(url):
-        yt : YouTube = YouTube(url)
-        title = yt.title
-        author = yt.author
-        publish_date = yt.publish_date
-        age_restricted : bool = yt.age_restricted
-        if age_restricted:
-            print(f"Video is age restricted, skipping")
-            return
-        print(f"Downloading [{title}] by [{author}] on [{publish_date}]...")
-        stream : Stream = select_stream(yt)
-        if stream:
-            print(f"Selected format: res:{stream.resolution} subtype:{stream.subtype} video_codec:{stream.video_codec} audio_codec:{stream.audio_codec}")
-            # Download if not exists
-            publish_date : str = f"{yt.publish_date.year:04d}-{yt.publish_date.month:02d}-{yt.publish_date.day:02d}"
-            video_filename : str = string.Template(get_file_name_template()).substitute(
-                title = yt.title,
-                author = yt.author,
-                publish_date = publish_date,
-                subtype = stream.subtype)
-            full_filename_path : str = os.path.join(get_output_path(), video_filename)
-            file_path : str = None
-            if os.path.exists(full_filename_path):
-                print(f"File already exists [{full_filename_path}] for url [{url}]")
-            else:
-                file_path : str = stream.download(
-                    output_path = get_output_path(), 
-                    filename = video_filename)
-                full_filename_path = file_path
-            # store tags
-            store_tags(yt, stream, full_filename_path)
-            # save url to db
-            persistence.store_download_url(url)
-        else:
-            print(f"ERROR: Could not find a matching stream for [{url}]")
+        #full_filename_path : str = os.path.join(get_output_path(), video_filename)
+        ydl_opts = {
+            "outtmpl": os.path.join(get_output_path(), "%(uploader)s - %(upload_date>%Y-%m-%d)s - %(title)s.%(ext)s"),
+            "format": "bv*[height<=1080]+ba",
+            "merge_output_format": "mp4",
+            'writethumbnail': True,
+            'embedthumbnail': True,
+            "progress_hooks": [yt_dlp_monitor]
+        }        
+        ytdlp : yt_dlp.YoutubeDL = yt_dlp.YoutubeDL(ydl_opts)
+        ytdlp.add_post_processor(MyCustomPP(), when='after_move')
+        ytdlp.download(url)
+        # TODO add tags
+        persistence.store_download_url(url)
+        
+        #yt : YouTube = YouTube(url)
+        #title = yt.title
+        #author = yt.author
+        #publish_date = yt.publish_date
+        #age_restricted : bool = yt.age_restricted
+        #if age_restricted:
+        #    print(f"Video is age restricted, skipping")
+        #    return
+        #print(f"Downloading [{title}] by [{author}] on [{publish_date}]...")
+        #stream : Stream = select_stream(yt)
+        #if stream:
+        #    print(f"Selected format: res:{stream.resolution} subtype:{stream.subtype} video_codec:{stream.video_codec} audio_codec:{stream.audio_codec}")
+        #    # Download if not exists
+        #    publish_date : str = f"{yt.publish_date.year:04d}-{yt.publish_date.month:02d}-{yt.publish_date.day:02d}"
+        #    video_filename : str = string.Template(get_file_name_template()).substitute(
+        #        title = yt.title,
+        #        author = yt.author,
+        #        publish_date = publish_date,
+        #        subtype = stream.subtype)
+        #    full_filename_path : str = os.path.join(get_output_path(), video_filename)
+        #    file_path : str = None
+        #    if os.path.exists(full_filename_path):
+        #        print(f"File already exists [{full_filename_path}] for url [{url}]")
+        #    else:
+        #        file_path : str = stream.download(
+        #            output_path = get_output_path(), 
+        #            filename = video_filename)
+        #        full_filename_path = file_path
+        #    # store tags
+        #    store_tags(yt, stream, full_filename_path)
+        #    # save url to db
+        #    persistence.store_download_url(url)
+        #else:
+        #    print(f"ERROR: Could not find a matching stream for [{url}]")
     else:
         print(f"Already downloaded [{url}]")
 
@@ -182,7 +210,8 @@ def main():
             for url in url_list:
                 print(f"Found url [{url}]")
                 process_url(url)
-        if is_loop_enabled:        
+        if is_loop_enabled:
+            print(f"Sleeping ...")     
             time.sleep(60)
         else:
             break
