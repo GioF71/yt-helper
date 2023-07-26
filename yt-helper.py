@@ -1,11 +1,13 @@
 import os
 import sys
 import string
+import time
 
 import persistence
 
 from resolution import Resolution
 from pytube import YouTube, Playlist, StreamQuery, Stream
+from pytube.exceptions import AgeRestrictedError
 from mutagen.mp4 import MP4, MP4MetadataError
 
 from functools import cmp_to_key
@@ -20,6 +22,8 @@ def get_file_name_template() -> str:
 def get_subtype() -> str: return os.getenv("SUBTYPE", "mp4")
 
 def get_output_path() -> str: return os.getenv("OUTPUT_PATH", ".")
+
+def is_loop_enabled() -> bool: return os.gentenv("ENABLE_LOOP", "1") == "1"
 
 def compare_resolution(left : Resolution, right : Resolution) -> int:
     cmp : int = -1 if left.get_height() < right.get_height() else 0 if left.get_height() == right.get_height() else 1
@@ -67,11 +71,15 @@ def compare_stream(left : Stream, right : Stream) -> int:
 
 def list_streams(yt : YouTube) -> list[Stream]:
     stream_list : list[Stream] = list()
-    sq : StreamQuery = yt.streams.order_by("resolution")
-    current : Stream
-    for current in sq:
-        stream_list.append(current)
-    stream_list.sort(key = cmp_to_key(compare_stream), reverse = True)
+    sq : StreamQuery
+    try:
+        sq = yt.streams.order_by("resolution")
+        current : Stream
+        for current in sq:
+            stream_list.append(current)
+        stream_list.sort(key = cmp_to_key(compare_stream), reverse = True)
+    except AgeRestrictedError as exc:
+        print(f"Exception [{type(exc).__name__}] occurred when getting streams for video_id: [{yt.video_id}] author: [{yt.author}] title: [{yt.title}]")
     return stream_list
 
 def stream_res_filter(stream_list_desc : list[Stream], max_resolution : Resolution) -> list[Stream]:
@@ -81,7 +89,7 @@ def stream_res_filter(stream_list_desc : list[Stream], max_resolution : Resoluti
     for current in stream_list_desc:
         current_res : Resolution = Resolution(current.resolution)
         if compare_resolution(current_res, max_resolution) <= 0:
-            # allowed
+            # allowed res
             if not match_res: match_res = current_res
             if match_res and compare_resolution(current_res, match_res) < 0: break
             filtered.append(current)
@@ -121,6 +129,10 @@ def process_url(url : str):
         title = yt.title
         author = yt.author
         publish_date = yt.publish_date
+        age_restricted : bool = yt.age_restricted
+        if age_restricted:
+            print(f"Video is age restricted, skipping")
+            return
         print(f"Downloading [{title}] by [{author}] on [{publish_date}]...")
         stream : Stream = select_stream(yt)
         if stream:
@@ -150,19 +162,30 @@ def process_url(url : str):
     else:
         print(f"Already downloaded [{url}]")
 
+def build_playlist_url(playlist_id : str) -> str:
+    return f"https://www.youtube.com/playlist?list={playlist_id}"
+
 def main():
-    playlist_url : str = os.getenv("PLAYLIST_URL")
-    if not playlist_url:
-        print("No playlist specified")
-        sys.exit(1)
-    print(f"Playlist id: {playlist_url}")
-    playlist : Playlist = Playlist(playlist_url)
-    print(f"Playlist title: {playlist.title}")
-    url_list : list[str] = playlist.video_urls
-    url : str
-    for url in url_list:
-        print(f"Found url [{url}]")
-        process_url(url)
+    playlist_list : list[str] = os.getenv("PLAYLIST").split(",")
+    while True:
+        if not playlist_list or len(playlist_list) == 0:
+            print("No playlist specified")
+            sys.exit(1)
+        current_playlist : str
+        for current_playlist in playlist_list:
+            playlist_url : str = build_playlist_url(current_playlist)
+            print(f"Playlist id: {playlist_url}")
+            playlist : Playlist = Playlist(playlist_url)
+            print(f"Playlist title: {playlist.title}")
+            url_list : list[str] = playlist.video_urls
+            url : str
+            for url in url_list:
+                print(f"Found url [{url}]")
+                process_url(url)
+        if is_loop_enabled:        
+            time.sleep(60)
+        else:
+            break
 
 if __name__ == '__main__':
     main()
