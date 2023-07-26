@@ -1,5 +1,6 @@
 import os
 import sys
+import string
 
 import persistence
 
@@ -10,12 +11,15 @@ from mutagen.mp4 import MP4, MP4MetadataError
 from functools import cmp_to_key
 
 def get_max_resolution() -> Resolution:
-    env_max_resolution : str = os.getenv("MAX_RESOLUTION")
+    env_max_resolution : str = os.getenv("MAX_RESOLUTION", "1080p")
     return Resolution(env_max_resolution) if env_max_resolution else None
+
+def get_file_name_template() -> str:
+    return os.getenv("FILE_NAME_TEMPLATE", "$title.$subtype")
 
 def get_subtype() -> str: return os.getenv("SUBTYPE", "mp4")
 
-def get_output_path() -> str: return os.getenv("OUTPUT_PATH")
+def get_output_path() -> str: return os.getenv("OUTPUT_PATH", ".")
 
 def compare_resolution(left : Resolution, right : Resolution) -> int:
     cmp : int = -1 if left.get_height() < right.get_height() else 0 if left.get_height() == right.get_height() else 1
@@ -122,8 +126,12 @@ def process_url(url : str):
         if stream:
             print(f"Selected format: res:{stream.resolution} subtype:{stream.subtype} video_codec:{stream.video_codec} audio_codec:{stream.audio_codec}")
             # Download if not exists
-            #video_filename : str = stream.default_filename
-            video_filename : str = f"{author} - {title}.{stream.subtype}"
+            publish_date : str = f"{yt.publish_date.year:04d}-{yt.publish_date.month:02d}-{yt.publish_date.day:02d}"
+            video_filename : str = string.Template(get_file_name_template()).substitute(
+                title = yt.title,
+                author = yt.author,
+                publish_date = publish_date,
+                subtype = stream.subtype)
             full_filename_path : str = os.path.join(get_output_path(), video_filename)
             file_path : str = None
             if os.path.exists(full_filename_path):
