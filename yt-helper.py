@@ -2,6 +2,7 @@ import os
 import sys
 import string
 import time
+import copy
 
 import persistence
 
@@ -10,13 +11,12 @@ from resolution import Resolution
 import yt_dlp
 from pytube import YouTube, Playlist, StreamQuery, Stream
 from pytube.exceptions import AgeRestrictedError
-from mutagen.mp4 import MP4, MP4MetadataError
+from mutagen.mp4 import MP4, MP4MetadataError, MP4StreamInfoError
 
 from functools import cmp_to_key
 
-def get_max_resolution() -> Resolution:
-    env_max_resolution : str = os.getenv("MAX_RESOLUTION", "1080p")
-    return Resolution(env_max_resolution) if env_max_resolution else None
+def get_max_resolution() -> str: return os.getenv("MAX_RESOLUTION", "1080")
+def get_output_format() -> str: return os.getenv("OUTPUT_FORMAT", "mp4")
 
 def get_file_name_template() -> str:
     return os.getenv("FILE_NAME_TEMPLATE", "$title.$subtype")
@@ -27,12 +27,6 @@ def get_output_path() -> str: return os.getenv("OUTPUT_PATH", ".")
 
 def is_loop_enabled() -> bool: return os.gentenv("ENABLE_LOOP", "1") == "1"
 
-def compare_resolution(left : Resolution, right : Resolution) -> int:
-    cmp : int = -1 if left.get_height() < right.get_height() else 0 if left.get_height() == right.get_height() else 1
-    if cmp == 0:
-        cmp = -1 if left.get_mode() < right.get_mode() else 0 if left.get_mode() == right.get_mode() else 1
-    return cmp
-
 def compare_str(left : str, right : str) -> int:
     if not left and not right: return 0
     if not left: return -1
@@ -41,89 +35,22 @@ def compare_str(left : str, right : str) -> int:
     if left < right: return -1
     return 1
 
-def compare_stream(left : Stream, right : Stream) -> int:
-    left_res : Resolution = Resolution(left.resolution)
-    right_res : Resolution = Resolution(right.resolution)
-    cmp : int = compare_resolution(left_res, right_res)
-    if cmp == 0:
-        left_fps : int = left.fps
-        right_fps : int = right.fps
-        cmp = left_fps - right_fps
-    if cmp == 0:
-        left_vcodec : str = left.video_codec
-        right_vcodec : str = right.video_codec
-        cmp = compare_str(left_vcodec, right_vcodec)
-    if cmp == 0:
-        left_is_hdr : bool = left.is_hdr
-        right_is_hdr : bool = right.is_hdr
-        cmp = 0 if left_is_hdr == right_is_hdr else 1 if left_is_hdr else -1
-    if cmp == 0:
-        left_acodec : str = left.audio_codec
-        right_acodec : str = right.audio_codec
-        cmp = compare_str(left_acodec, right_acodec)
-    if cmp == 0:
-        left_bitrate : int = left.bitrate
-        right_bitrate : int = right.bitrate
-        cmp = left_bitrate - right_bitrate
-    if cmp == 0:
-        left_fs : int = left.filesize
-        right_fs : int = right.filesize
-        cmp = left_fs - right_fs
-    return cmp
-
-def list_streams(yt : YouTube) -> list[Stream]:
-    stream_list : list[Stream] = list()
-    sq : StreamQuery
-    try:
-        sq = yt.streams.order_by("resolution")
-        current : Stream
-        for current in sq:
-            stream_list.append(current)
-        stream_list.sort(key = cmp_to_key(compare_stream), reverse = True)
-    except AgeRestrictedError as exc:
-        print(f"Exception [{type(exc).__name__}] occurred when getting streams for video_id: [{yt.video_id}] author: [{yt.author}] title: [{yt.title}]")
-    return stream_list
-
-def stream_res_filter(stream_list_desc : list[Stream], max_resolution : Resolution) -> list[Stream]:
-    filtered : list[Stream] = list()
-    current : Stream
-    match_res : Resolution = None
-    for current in stream_list_desc:
-        current_res : Resolution = Resolution(current.resolution)
-        if compare_resolution(current_res, max_resolution) <= 0:
-            # allowed res
-            if not match_res: match_res = current_res
-            if match_res and compare_resolution(current_res, match_res) < 0: break
-            filtered.append(current)
-    return filtered
-
-def stream_format_filter(stream_list_desc : list[Stream], subtype : str) -> list[Stream]:
-    filtered : list[Stream] = list()
-    current : Stream
-    for current in stream_list_desc:
-        if current.subtype == subtype:
-            filtered.append(current)
-    return filtered
-
-def select_stream(yt : YouTube) -> Stream:
-    stream_list : list[Stream] = list_streams(yt)
-    stream_list = stream_res_filter(stream_list, get_max_resolution())
-    stream_list = stream_format_filter(stream_list, get_subtype())
-    return stream_list[0] if len(stream_list) > 0 else None
-
-def store_tags(yt : YouTube, stream : Stream, file_path : str):
-    if stream.subtype == "mp4":
+def store_tags(ytdlp : yt_dlp.YoutubeDL, info_dict : dict[str, any]):
+    if get_output_format() == "mp4":
+        file_name : str = info_dict["filename"]
         try: 
-            tags = MP4(file_path)
-        except MP4MetadataError as e:
+            tags = MP4(file_name)
+        except (MP4MetadataError, MP4StreamInfoError) as e:
             print("Adding MP4Tags header")
             tags = MP4()
-        tags["titl"] = yt.title
-        tags["auth"] = yt.author
-        tags["aART"] = yt.author
-        tags["\xa9ART"] = yt.author
-        tags["\\xa9day"] = str(yt.publish_date.year)
-        tags.save(file_path)
+        tags["titl"] = info_dict["title"]
+        tags["auth"] = info_dict["uploader"]
+        tags["aART"] = info_dict["uploader"]
+        tags["\xa9ART"] = info_dict["uploader"]
+        #tags["\\xa9day"] = str(yt.publish_date.year) #TODO use upload_date which is for example 20230510
+        tags.save(file_name)
+
+filename_info_dict : dict[str, dict[str, any]] = {}
 
 def yt_dlp_monitor(d):
     status = d["status"]
@@ -133,7 +60,8 @@ def yt_dlp_monitor(d):
 
 class MyCustomPP(yt_dlp.postprocessor.PostProcessor):
     def run(self, info):
-        self.to_screen('Doing stuff')
+        self.to_screen(f"File name is [{info['filename']}]")
+        filename_info_dict[info["webpage_url"]] = copy.deepcopy(info)
         return [], info
 
 def process_url(url : str):
@@ -141,8 +69,8 @@ def process_url(url : str):
         #full_filename_path : str = os.path.join(get_output_path(), video_filename)
         ydl_opts = {
             "outtmpl": os.path.join(get_output_path(), "%(uploader)s - %(upload_date>%Y-%m-%d)s - %(title)s.%(ext)s"),
-            "format": "bv*[height<=1080]+ba",
-            "merge_output_format": "mp4",
+            "format": f"bv*[height<={get_max_resolution()}]+ba",
+            "merge_output_format": get_output_format(),
             'writethumbnail': True,
             'embedthumbnail': True,
             "progress_hooks": [yt_dlp_monitor]
@@ -151,7 +79,10 @@ def process_url(url : str):
         ytdlp.add_post_processor(MyCustomPP(), when='after_move')
         ytdlp.download(url)
         # TODO add tags
+        info_dict : dict[str, any] = filename_info_dict[url]
+        # TODO does not work ### store_tags(ytdlp, info_dict)
         persistence.store_download_url(url)
+        del filename_info_dict[url]
         
         #yt : YouTube = YouTube(url)
         #title = yt.title
