@@ -122,6 +122,18 @@ def process_url(url : str):
 def build_playlist_url(playlist_id : str) -> str:
     return f"https://www.youtube.com/playlist?list={playlist_id}"
 
+def process_playlist(playlist : str):
+    playlist_url : str = build_playlist_url(playlist)
+    print(f"Playlist id: {playlist_url}")
+    playlist : Playlist = Playlist(playlist_url)
+    if playlist and len(playlist) > 0:
+        print(f"Playlist title: {playlist.title}")
+        url_list : list[str] = playlist.video_urls
+        url : str
+        for url in url_list if url_list else []:
+            print(f"Found url [{url}]")
+            process_url(url)
+
 def main():
     playlist_list : list[str] = os.getenv("PLAYLIST").split(",")
     while True:
@@ -130,16 +142,7 @@ def main():
             sys.exit(1)
         current_playlist : str
         for current_playlist in playlist_list:
-            playlist_url : str = build_playlist_url(current_playlist)
-            print(f"Playlist id: {playlist_url}")
-            playlist : Playlist = Playlist(playlist_url)
-            if playlist and len(playlist) > 0:
-                print(f"Playlist title: {playlist.title}")
-                url_list : list[str] = playlist.video_urls
-                url : str
-                for url in url_list if url_list else []:
-                    print(f"Found url [{url}]")
-                    process_url(url)
+            process_playlist(current_playlist)
         if is_loop_enabled:
             print(f"Sleeping ...")     
             time.sleep(60)
