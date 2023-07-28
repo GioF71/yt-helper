@@ -5,16 +5,23 @@ import time
 import copy
 import logging
 
+from channel_subscription import ChannelSubscription
+from channel_identifier_type import ChannelIdentifierType
+
 import persistence
 
 import yt_dlp
 import exiftool
 import pytube
-from pytube import YouTube, Playlist, StreamQuery, Stream
+from pytube import YouTube, Channel, Playlist, StreamQuery, Stream
 from pytube.exceptions import AgeRestrictedError
 from mutagen.mp4 import MP4, MP4MetadataError, MP4StreamInfoError
 
 from functools import cmp_to_key
+
+
+def get_playlists() -> list[str]: return os.getenv("PLAYLIST_LIST", "").split(",")
+def get_channel_names() -> list[str]: return os.getenv("CHANNEL_NAME_LIST", "").split(",")
 
 def get_max_resolution() -> str: return os.getenv("MAX_RESOLUTION", "1080")
 def get_output_format() -> str: return os.getenv("OUTPUT_FORMAT", "mkv")
@@ -134,15 +141,45 @@ def process_playlist(playlist : str):
             print(f"Found url [{url}]")
             process_url(url)
 
+def process_playlists():
+    lst : list[str] = get_playlists()
+    current : str
+    for current in lst if lst else []:
+        process_playlist(current)
+
+def process_channel_subscription(channel : ChannelSubscription):
+    channel_url : str = channel.build_url()
+    print(f"Channel Identifier: {channel.identifier_type} {channel.identifier_value}")
+    channel : Channel = Channel(channel_url)
+    print(f"Channel Name:[{channel.channel_name}] Id:[{channel.channel_id}] URL:[{channel_url}]")
+    current_url : str
+    for current_url in channel.video_urls:
+        print(f"Found video at url [{current_url}]")
+        
+def process_channels_names():
+    lst : list[ChannelSubscription] = list()
+    c_list : list[str] = get_channel_names()
+    for ch_name in c_list if c_list else []:
+        identifier : str
+        subscription_start : str
+        identifier, subscription_start = ch_name.split(":")
+        # TODO validate
+        ch_subscription : ChannelSubscription = ChannelSubscription(
+            ChannelIdentifierType.CHANNEL_NAME, 
+            identifier, 
+            subscription_start)
+        lst.append(ch_subscription)
+    process_channel_subscription_list(lst)
+        
+def process_channel_subscription_list(lst : list[ChannelSubscription]):
+    current : str
+    for current in lst if lst else []:
+        process_channel_subscription(current)
+
 def main():
-    playlist_list : list[str] = os.getenv("PLAYLIST").split(",")
     while True:
-        if not playlist_list or len(playlist_list) == 0:
-            print("No playlist specified")
-            sys.exit(1)
-        current_playlist : str
-        for current_playlist in playlist_list:
-            process_playlist(current_playlist)
+        process_channels_names()
+        process_playlists()
         if is_loop_enabled:
             print(f"Sleeping ...")     
             time.sleep(60)

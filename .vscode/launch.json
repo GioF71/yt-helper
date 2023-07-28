@@ -8,7 +8,7 @@
             "program": "${file}",
             "console": "integratedTerminal",
             "envFile": "${workspaceFolder}/.env",
-            "justMyCode": true
+            "justMyCode": false
         },
         {
             "name": "Python: yt-helper",
@@ -17,7 +17,7 @@
             "program": "${workspaceFolder}/yt-helper.py",
             "console": "integratedTerminal",
             "envFile": "${workspaceFolder}/.env",
-            "justMyCode": true
+            "justMyCode": false
         }
     ]
 }
