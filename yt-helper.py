@@ -2,6 +2,7 @@ import os
 import sys
 import string
 import time
+import shutil
 import copy
 import logging
 
@@ -36,7 +37,9 @@ def get_output_path() -> str: return os.getenv("OUTPUT_PATH", ".")
 
 def is_loop_enabled() -> bool: return os.gentenv("ENABLE_LOOP", "1") == "1"
 def get_loop_wait_sec() -> int: return int(os.getenv("LOOP_WAIT_SEC", "300"))
-def is_slugify_enabled() -> str: return os.getenv("SLUGIFY", "0") == "1"
+def is_slugify_enabled() -> bool: return os.getenv("SLUGIFY", "0") == "1"
+def is_printable_enabled() -> bool: return os.getenv("PRINTABLE", "1") == "1"
+def is_dir_per_channel_enabled() -> bool: return os.getenv("DIRECTORY_PER_CHANNEL", "0") == "1"
 
 def compare_str(left : str, right : str) -> int:
     if not left and not right: return 0
@@ -80,6 +83,9 @@ class PostProcessor(yt_dlp.postprocessor.PostProcessor):
         #metadata = tool.get_metadata(file_name)
         return [], info
 
+def as_printable(s : str) -> str:
+    return ''.join([str(char) for char in s if char in string.printable])
+
 def process_url(url : str):
     if not persistence.has_been_downloaded(url):
         params : dict[str, any] = dict()
@@ -90,35 +96,16 @@ def process_url(url : str):
         params["writethumbnail"] = False
         params["embedthumbnail"] = True
         params["progress_hooks"] = [yt_dlp_monitor]
-        
-        ydl_opts = {
-            "outtmpl": os.path.join(get_output_path(), get_file_name_template()),
-            "format": f"bv*[height<={get_max_resolution()}]+ba",
-            "merge_output_format": get_output_format(),
-            'writethumbnail': True,
-            'embedthumbnail': True,
-            "progress_hooks": [yt_dlp_monitor],
-            #'postprocessors': [{
-            #    'key': 'MetadataParser',
-            #    'when': 'pre_process',
-            #    'actions': [
-            #        (yt_dlp.MetadataParserPP.Actions.INTERPRET, 'author', r'(?s)(?P<meta_comment>.+)'),
-            #        (yt_dlp.MetadataParserPP.Actions.INTERPRET, 'artist', r'(?s)(?P<meta_comment>.+)'),
-            #        (yt_dlp.MetadataParserPP.Actions.INTERPRET, 'aART', r'(?s)(?P<meta_comment>.+)')
-            #        
-            #    ]
-            #},
-            #]
-        }
         pytube_yt : pytube.YouTube = pytube.YouTube(url)
         skip_video : bool = False
         skip_reason : str = None
-        is_upcoming : bool = pytube_yt.vid_info["videoDetails"]["isUpcoming"] if "videoDetails" in pytube_yt.vid_info and "isUpcoming" in pytube_yt.vid_info["videoDetails"] else False
+        is_upcoming : bool = (pytube_yt.vid_info["videoDetails"]["isUpcoming"] 
+            if "videoDetails" in pytube_yt.vid_info and 
+                "isUpcoming" in pytube_yt.vid_info["videoDetails"] 
+            else False)
         if is_upcoming:
             skip_video = True
             skip_reason = "Video is marked as \"upcoming\""
-        #playability : dict[str, any] = pytube_yt.vid_info["playabilityStatus"]
-        #print(f"Playability status for url:[{url}] Author:[{pytube_yt.author}] Title:[{pytube_yt.title}] is: [{playability['status']}]")
         if not skip_video:
             yt : yt_dlp.YoutubeDL = yt_dlp.YoutubeDL(params = params)
             yt.add_post_processor(PostProcessor(), when='after_move')
@@ -136,7 +123,7 @@ def process_url(url : str):
                     final_path : str = path_portion
                     final_file_name : str = file_portion
                     if is_slugify_enabled():
-                        f :str
+                        f : str
                         e : str 
                         f, e = os.path.splitext(file_portion)
                         s : str = slugify.slugify(f)
@@ -144,10 +131,22 @@ def process_url(url : str):
                         if slugified != file_portion:
                             final_file_name = slugified
                             do_rename = True
+                    if not is_slugify_enabled() and is_printable_enabled():
+                        final_file_name = as_printable(final_file_name)
+                        do_rename = True
                     if do_rename:
                         final_full_path : str = os.path.join(final_path, final_file_name)
                         print(f"File {downloaded_file_name} to be renamed to {final_full_path}")
                         os.rename(downloaded_file_name, final_full_path)
+                    else:
+                        final_full_path = downloaded_file_name
+                    if is_dir_per_channel_enabled():
+                        # Create dir if not exists
+                        target_dir : str = os.path.join(get_output_path(), pytube_yt.author)
+                        if not os.path.exists(target_dir):
+                            os.mkdir(target_dir)
+                        # Move file
+                        shutil.move(final_full_path, target_dir)
                     del file_name_by_url[url]
             except yt_dlp.utils.DownloadError as e:
                 print(f"Cannot download URL [{url}] due to [{type(e).__name__}] [{e.message if hasattr(e, 'message') else e}]")
