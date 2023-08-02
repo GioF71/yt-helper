@@ -14,7 +14,7 @@
             "name": "Python: yt-helper",
             "type": "python",
             "request": "launch",
-            "program": "${workspaceFolder}/yt-helper.py",
+            "program": "${workspaceFolder}/yt-helper/yt-helper.py",
             "console": "integratedTerminal",
             "envFile": "${workspaceFolder}/.env",
             "justMyCode": false
