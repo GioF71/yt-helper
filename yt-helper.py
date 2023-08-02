@@ -11,6 +11,7 @@ from channel_identifier_type import ChannelIdentifierType
 import persistence
 
 import yt_dlp
+import slugify
 import exiftool
 import pytube
 from pytube import YouTube, Channel, Playlist, StreamQuery, Stream
@@ -34,6 +35,8 @@ def get_subtype() -> str: return os.getenv("SUBTYPE", "mp4")
 def get_output_path() -> str: return os.getenv("OUTPUT_PATH", ".")
 
 def is_loop_enabled() -> bool: return os.gentenv("ENABLE_LOOP", "1") == "1"
+def get_loop_wait_sec() -> int: return int(os.getenv("LOOP_WAIT_SEC", "300"))
+def is_slugify_enabled() -> str: return os.getenv("SLUGIFY", "0") == "1"
 
 def compare_str(left : str, right : str) -> int:
     if not left and not right: return 0
@@ -58,6 +61,8 @@ def store_tags(yt : yt_dlp.YoutubeDL, info_dict : dict[str, any]):
         #tags["\\xa9day"] = str(yt.publish_date.year) #TODO use upload_date which is for example 20230510
         tags.save(file_name)
 
+file_name_by_url : dict[str, str] = dict()
+
 def yt_dlp_monitor(d):
     status = d["status"]
     if status == "finished":
@@ -66,8 +71,11 @@ def yt_dlp_monitor(d):
 
 class PostProcessor(yt_dlp.postprocessor.PostProcessor):
     def run(self, info):
-        self.to_screen(f"File name is [{info['filename']}]")
-        #file_name : str = info["filename"]
+        file_name : str = info["filename"]
+        url : str = info["webpage_url"]
+        self.to_screen(f"File name is [{file_name}]")
+        file_name_by_url[url] = file_name
+        #file_name_by_url[url] = file_name
         #tool : exiftool.ExifToolHelper = exiftool.ExifToolHelper(file_name)
         #metadata = tool.get_metadata(file_name)
         return [], info
@@ -79,7 +87,7 @@ def process_url(url : str):
         max_resolution : str = get_max_resolution()
         params["format"] = f"bv*[height<={max_resolution}]+ba" if max_resolution else f"bv+ba"
         if get_output_format(): params["merge_output_format"] = get_output_format()
-        params["writethumbnail"] = True
+        params["writethumbnail"] = False
         params["embedthumbnail"] = True
         params["progress_hooks"] = [yt_dlp_monitor]
         
@@ -105,7 +113,6 @@ def process_url(url : str):
         pytube_yt : pytube.YouTube = pytube.YouTube(url)
         skip_video : bool = False
         skip_reason : str = None
-     
         is_upcoming : bool = pytube_yt.vid_info["videoDetails"]["isUpcoming"] if "videoDetails" in pytube_yt.vid_info and "isUpcoming" in pytube_yt.vid_info["videoDetails"] else False
         if is_upcoming:
             skip_video = True
@@ -119,6 +126,29 @@ def process_url(url : str):
                 yt.download(url)
                 # TODO add tags
                 persistence.store_download_url(url)
+                # TODO slugify filename
+                downloaded_file_name : str = file_name_by_url[url] if url in file_name_by_url else None
+                if downloaded_file_name:
+                    do_rename : bool = False
+                    splitted : tuple[str, str] = os.path.split(downloaded_file_name)
+                    path_portion : str = splitted[0]
+                    file_portion : str = splitted[1]
+                    final_path : str = path_portion
+                    final_file_name : str = file_portion
+                    if is_slugify_enabled():
+                        f :str
+                        e : str 
+                        f, e = os.path.splitext(file_portion)
+                        s : str = slugify.slugify(f)
+                        slugified : str = f"{s}{e}"
+                        if slugified != file_portion:
+                            final_file_name = slugified
+                            do_rename = True
+                    if do_rename:
+                        final_full_path : str = os.path.join(final_path, final_file_name)
+                        print(f"File {downloaded_file_name} to be renamed to {final_full_path}")
+                        os.rename(downloaded_file_name, final_full_path)
+                    del file_name_by_url[url]
             except yt_dlp.utils.DownloadError as e:
                 print(f"Cannot download URL [{url}] due to [{type(e).__name__}] [{e.message if hasattr(e, 'message') else e}]")
         else:
@@ -182,7 +212,7 @@ def main():
         process_playlists()
         if is_loop_enabled:
             print(f"Sleeping ...")     
-            time.sleep(60)
+            time.sleep(get_loop_wait_sec())
         else:
             break
 
