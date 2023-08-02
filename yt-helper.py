@@ -1,10 +1,7 @@
 import os
-import sys
 import string
 import time
 import shutil
-import copy
-import logging
 
 from channel_subscription import ChannelSubscription
 from channel_identifier_type import ChannelIdentifierType
@@ -13,11 +10,7 @@ import persistence
 
 import yt_dlp
 import slugify
-import exiftool
 import pytube
-from pytube import YouTube, Channel, Playlist, StreamQuery, Stream
-from pytube.exceptions import AgeRestrictedError
-from mutagen.mp4 import MP4, MP4MetadataError, MP4StreamInfoError
 
 from functools import cmp_to_key
 
@@ -49,21 +42,6 @@ def compare_str(left : str, right : str) -> int:
     if left < right: return -1
     return 1
 
-def store_tags(yt : yt_dlp.YoutubeDL, info_dict : dict[str, any]):
-    if get_output_format() == "mp4":
-        file_name : str = info_dict["filename"]
-        try: 
-            tags = MP4(file_name)
-        except (MP4MetadataError, MP4StreamInfoError) as e:
-            print("Adding MP4Tags header")
-            tags = MP4()
-        tags["titl"] = info_dict["title"]
-        tags["auth"] = info_dict["uploader"]
-        tags["aART"] = info_dict["uploader"]
-        tags["\xa9ART"] = info_dict["uploader"]
-        #tags["\\xa9day"] = str(yt.publish_date.year) #TODO use upload_date which is for example 20230510
-        tags.save(file_name)
-
 file_name_by_url : dict[str, str] = dict()
 
 def yt_dlp_monitor(d):
@@ -78,9 +56,6 @@ class PostProcessor(yt_dlp.postprocessor.PostProcessor):
         url : str = info["webpage_url"]
         self.to_screen(f"File name is [{file_name}]")
         file_name_by_url[url] = file_name
-        #file_name_by_url[url] = file_name
-        #tool : exiftool.ExifToolHelper = exiftool.ExifToolHelper(file_name)
-        #metadata = tool.get_metadata(file_name)
         return [], info
 
 def as_printable(s : str) -> str:
@@ -161,7 +136,7 @@ def build_playlist_url(playlist_id : str) -> str:
 def process_playlist(playlist : str):
     playlist_url : str = build_playlist_url(playlist)
     print(f"Playlist id: {playlist_url}")
-    playlist : Playlist = Playlist(playlist_url)
+    playlist : pytube.Playlist = pytube.Playlist(playlist_url)
     if playlist and len(playlist) > 0:
         print(f"Playlist title: {playlist.title}")
         url_list : list[str] = playlist.video_urls
@@ -179,7 +154,7 @@ def process_playlists():
 def process_channel_subscription(channel : ChannelSubscription):
     channel_url : str = channel.build_url()
     print(f"Channel Identifier: {channel.identifier_type} {channel.identifier_value}")
-    channel : Channel = Channel(channel_url)
+    channel : pytube.Channel = pytube.Channel(channel_url)
     print(f"Channel Name:[{channel.channel_name}] Id:[{channel.channel_id}] URL:[{channel_url}]")
     current_url : str
     for current_url in channel.video_urls:
