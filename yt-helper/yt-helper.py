@@ -14,7 +14,6 @@ import pytube
 
 from functools import cmp_to_key
 
-
 def get_playlists() -> list[str]: return os.getenv("PLAYLIST_LIST", "").split(",")
 def get_channel_names() -> list[str]: return os.getenv("CHANNEL_NAME_LIST", "").split(",")
 
@@ -156,7 +155,8 @@ def process_playlists():
     lst : list[str] = get_playlists()
     current : str
     for current in lst if lst else []:
-        process_playlist(current)
+        if current and len(current) > 0: 
+            process_playlist(current)
 
 def process_channel_subscription(channel : ChannelSubscription):
     channel_url : str = channel.build_url()
@@ -171,15 +171,17 @@ def process_channels_names():
     lst : list[ChannelSubscription] = list()
     c_list : list[str] = get_channel_names()
     for ch_name in c_list if c_list else []:
-        identifier : str
-        subscription_start : str
-        identifier, subscription_start = ch_name.split(":")
-        # TODO validate
-        ch_subscription : ChannelSubscription = ChannelSubscription(
-            ChannelIdentifierType.CHANNEL_NAME, 
-            identifier, 
-            subscription_start)
-        lst.append(ch_subscription)
+        print(f"Processing channel [{ch_name}] ...")
+        if ch_name and len(ch_name) > 0 and ":" in ch_name:
+            identifier : str
+            subscription_start : str
+            identifier, subscription_start = ch_name.split(":")
+            # TODO validate
+            ch_subscription : ChannelSubscription = ChannelSubscription(
+                ChannelIdentifierType.CHANNEL_NAME, 
+                identifier, 
+                subscription_start)
+            lst.append(ch_subscription)
     process_channel_subscription_list(lst)
         
 def process_channel_subscription_list(lst : list[ChannelSubscription]):
