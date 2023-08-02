@@ -110,9 +110,13 @@ def process_url(url : str):
                         final_file_name = as_printable(final_file_name)
                         do_rename = True
                     if do_rename:
-                        final_full_path : str = os.path.join(final_path, final_file_name)
-                        print(f"File {downloaded_file_name} to be renamed to {final_full_path}")
-                        os.rename(downloaded_file_name, final_full_path)
+                        candidate_final_full_path : str = os.path.join(final_path, final_file_name)
+                        print(f"File {downloaded_file_name} to be renamed to {candidate_final_full_path}")
+                        try:
+                            os.rename(downloaded_file_name, candidate_final_full_path)
+                            final_full_path = candidate_final_full_path
+                        except Exception as e:
+                            print(f"Cannot rename [{downloaded_file_name}] to [{candidate_final_full_path}], cause: [{e.message if hasattr(e, 'message') else e}]")
                     else:
                         final_full_path = downloaded_file_name
                     if is_dir_per_channel_enabled():
@@ -120,8 +124,11 @@ def process_url(url : str):
                         target_dir : str = os.path.join(get_output_path(), pytube_yt.author)
                         if not os.path.exists(target_dir):
                             os.mkdir(target_dir)
-                        # Move file
-                        shutil.move(final_full_path, target_dir)
+                        try:    
+                            # Move file
+                            shutil.move(final_full_path, target_dir)
+                        except Exception as e:
+                            print(f"Cannot move [{final_full_path}] to [{target_dir}], cause: [{e.message if hasattr(e, 'message') else e}]")
                     del file_name_by_url[url]
             except yt_dlp.utils.DownloadError as e:
                 print(f"Cannot download URL [{url}] due to [{type(e).__name__}] [{e.message if hasattr(e, 'message') else e}]")
@@ -185,7 +192,7 @@ def main():
         process_channels_names()
         process_playlists()
         if is_loop_enabled:
-            print(f"Sleeping ...")     
+            print(f"Sleeping for [{get_loop_wait_sec()}] seconds ...")     
             time.sleep(get_loop_wait_sec())
         else:
             break
