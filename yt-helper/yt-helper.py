@@ -2,6 +2,7 @@ import os
 import string
 import time
 import shutil
+import datetime
 
 from channel_subscription import ChannelSubscription
 from channel_identifier_type import ChannelIdentifierType
@@ -176,21 +177,25 @@ def process_channel_subscription(channel : ChannelSubscription):
         print(f"Found video at url [{current_url}]")
         
 def process_channels_names():
-    lst : list[ChannelSubscription] = list()
+    subscription_list : list[ChannelSubscription] = list()
     c_list : list[str] = get_channel_names()
     for ch_name in c_list if c_list else []:
         print(f"Processing channel [{ch_name}] ...")
-        if ch_name and len(ch_name) > 0 and ":" in ch_name:
-            identifier : str
-            subscription_start : str
-            identifier, subscription_start = ch_name.split(":")
-            # TODO validate
+        if ch_name and len(ch_name) > 0:
+            identifier : str = None
+            subscription_start : str = None
+            if ":" in ch_name:
+                identifier, subscription_start = ch_name.split(":")
+            else:
+                identifier = ch_name
+            if not subscription_start:
+                subscription_start = datetime.datetime.today().strftime('%Y-%m-%d')
             ch_subscription : ChannelSubscription = ChannelSubscription(
                 ChannelIdentifierType.CHANNEL_NAME, 
                 identifier, 
                 subscription_start)
-            lst.append(ch_subscription)
-    process_channel_subscription_list(lst)
+            subscription_list.append(ch_subscription)
+    process_channel_subscription_list(subscription_list)
         
 def process_channel_subscription_list(lst : list[ChannelSubscription]):
     current : str
