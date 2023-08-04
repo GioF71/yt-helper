@@ -146,9 +146,6 @@ def process_url(url : str):
     else:
         print(f"Video at URL: [{url}] has been downloaded already.")
 
-def build_playlist_url(playlist_id : str) -> str:
-    return f"https://www.youtube.com/playlist?list={playlist_id}"
-
 def process_playlist(playlist : Playlist):
     playlist_url : str = playlist.build_url()
     print(f"Playlist Id: [{playlist.playlist_id}] URL: [{playlist_url}]")
