@@ -221,7 +221,16 @@ def store_env_playlists():
             current : Playlist = Playlist.build(current)
             persistence.store_playlist(current)
 
+def store_env_channels():
+    lst : list[str] = get_channel_names()
+    current : str
+    for current in lst if lst else []:
+        if current and len(current) > 0: 
+            channel : ChannelSubscription = ChannelSubscription.build_by_name(current)
+            persistence.store_channel(channel)
+
 def main():
+    store_env_channels()
     store_env_playlists()
     while True:
         process_channels_names()

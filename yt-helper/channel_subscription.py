@@ -1,3 +1,5 @@
+import datetime
+
 from channel_identifier_type import ChannelIdentifierType
 
 class ChannelSubscription:
@@ -6,6 +8,25 @@ class ChannelSubscription:
     # identifier_value: the name or the id of the channel
     # subscription_start: a date, format is YYYY-MM-DD
     
+    def build_by_name(channel_name : str):
+        identifier_type : ChannelIdentifierType = ChannelIdentifierType.CHANNEL_NAME
+        identifier_value : str = None
+        subscription_start : str = None
+        if ":" in channel_name:
+            identifier_value, subscription_start = channel_name.split(":")
+        else:
+            identifier_value = channel_name
+        if subscription_start:
+            try:
+                y : str
+                m : str
+                d : str
+                y, m, d = subscription_start.split("-")
+                subscription_start = datetime.datetime(int(y),int(m),int(d))
+            except ValueError:
+                raise Exception(f"Invalid date string [{subscription_start}], format must be YYYY-mm-dd")
+        return ChannelSubscription(identifier_type, identifier_value, subscription_start)
+
     def __init__(self, 
             identifier_type : ChannelIdentifierType,
             identifier_value : str,

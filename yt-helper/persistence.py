@@ -3,6 +3,8 @@ import sqlite3
 import datetime
 
 from playlist import Playlist
+from channel_identifier_type import ChannelIdentifierType
+from channel_subscription import ChannelSubscription
 
 def __get_db_filename() -> str: return os.getenv("DB_FILE")
 
@@ -70,6 +72,18 @@ def __get_playlist_by_id(id : str):
     cursor.execute("SELECT playlist_id, date_limit FROM playlists WHERE playlist_id = ?", (id,))
     rows = cursor.fetchall()
     cursor.close()
+    if rows and len(rows) > 1:
+        raise Exception("Data corruption on playlists table")
+    return rows
+
+def __get_channel_by_identifier(
+        identifier_type : ChannelIdentifierType, 
+        identifier_value : str):
+    cursor = __connection.cursor()
+    cursor.execute("SELECT channel_id, identifier_type, identifier_value, date_limit FROM channels WHERE identifier_type = ? AND identifier_value = ?", 
+                   (identifier_type.name, identifier_value))
+    rows = cursor.fetchall()
+    cursor.close()
     return rows
 
 def has_been_downloaded(url : str) -> bool:
@@ -91,7 +105,7 @@ def store_playlist(playlist : Playlist):
         cursor.execute("INSERT INTO playlists(playlist_id, date_limit) VALUES(?, ?)", tuple)
         cursor.close()
         __connection.commit()
-    else:
+    elif len(existing) == 1:
         # anything different?
         existing_start : str = existing[0][1]
         if existing_start != start:
@@ -100,3 +114,26 @@ def store_playlist(playlist : Playlist):
             cursor.execute("UPDATE playlists SET date_limit = ? WHERE playlist_id = ?", tuple)
             cursor.close()
             __connection.commit()
+    else:
+        raise Exception("Data corruption on playlists table")
+    
+def store_channel(channel : ChannelSubscription):
+    existing = __get_channel_by_identifier(channel.identifier_type, channel.identifier_value)
+    start : str = channel.subscription_start.strftime('%Y-%m-%d') if channel.subscription_start else None
+    if len(existing) == 0:
+        tuple = (channel.identifier_type.name, channel.identifier_value, start)
+        cursor = __connection.cursor()
+        cursor.execute("INSERT INTO channels(identifier_type, identifier_value, date_limit) VALUES(?, ?, ?)", tuple)
+        cursor.close()
+        __connection.commit()
+    elif len(existing) == 1:
+        # anything different?
+        existing_start : str = existing[0][3]
+        if existing_start != start:
+            tuple = (start, channel.identifier_type.name, channel.identifier_value)
+            cursor = __connection.cursor()
+            cursor.execute("UPDATE channels SET date_limit = ? WHERE identifier_type = ? AND identifier_value = ?", tuple)
+            cursor.close()
+            __connection.commit()
+    else:
+        raise Exception("Data corruption on channels table")
