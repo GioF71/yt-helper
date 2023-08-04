@@ -152,12 +152,18 @@ def process_playlist(playlist : str):
     playlist_url : str = build_playlist_url(playlist)
     print(f"Playlist id: {playlist_url}")
     playlist : pytube.Playlist = pytube.Playlist(playlist_url)
+    # we cannot even read title if playlist is empty
+    # so we are checking here
     if playlist and len(playlist) > 0:
-        print(f"Playlist title: {playlist.title}")
+        print(f"Playlist title: [{playlist.title}]")
         url_list : list[str] = playlist.video_urls
         url : str
         for url in url_list if url_list else []:
             print(f"Found url [{url}]")
+            current_yt : pytube.YouTube = pytube.YouTube(url)
+            print(f"  Author: [{current_yt.author}]")
+            print(f"  Title: [{current_yt.title}]")
+            print(f"  Publish_date: [{current_yt.publish_date.strftime('%Y-%m-%d') if current_yt.publish_date else None}]")
             process_url(url)
 
 def process_playlists():
@@ -171,7 +177,7 @@ def process_channel_subscription(channel : ChannelSubscription):
     channel_url : str = channel.build_url()
     print(f"Channel Identifier: {channel.identifier_type} {channel.identifier_value}")
     channel : pytube.Channel = pytube.Channel(channel_url)
-    print(f"Channel Name:[{channel.channel_name}] Id:[{channel.channel_id}] URL:[{channel_url}]")
+    print(f"Channel Name: [{channel.channel_name}] Id: [{channel.channel_id}] URL: [{channel_url}]")
     current_url : str
     for current_url in channel.video_urls:
         print(f"Found video at url [{current_url}]")
