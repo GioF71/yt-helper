@@ -134,7 +134,7 @@ def process_url(url : str):
         else:
             print(f"Skipping video at url [{url}], reason: [{skip_reason}]")
     else:
-        print(f"Already downloaded [{url}]")
+        print(f"Video at url: [{url}] has been downloaded already.")
 
 def build_playlist_url(playlist_id : str) -> str:
     return f"https://www.youtube.com/playlist?list={playlist_id}"
