@@ -16,9 +16,11 @@ class Playlist:
             playlist_id = playlist_str
         if subscription_start:
             try:
-                y,m,d = subscription_start.split("-")
-                newDate : datetime = datetime.datetime(int(y),int(m),int(d))
-                subscription_start = newDate
+                y : str
+                m : str
+                d : str
+                y, m, d = subscription_start.split("-")
+                subscription_start = datetime.datetime(int(y),int(m),int(d))
             except ValueError:
                 raise Exception(f"Invalid date string [{subscription_start}], format must be YYYY-mm-dd")
         return Playlist(playlist_id, subscription_start)

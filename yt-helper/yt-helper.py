@@ -210,7 +210,16 @@ def process_channel_subscription_list(lst : list[ChannelSubscription]):
     for current in lst if lst else []:
         process_channel_subscription(current)
 
+def store_env_playlists():
+    lst : list[str] = get_playlists()
+    current : str
+    for current in lst if lst else []:
+        if current and len(current) > 0: 
+            current : Playlist = Playlist.build(current)
+            persistence.store_playlist(current)
+
 def main():
+    store_env_playlists()
     while True:
         process_channels_names()
         process_playlists()
