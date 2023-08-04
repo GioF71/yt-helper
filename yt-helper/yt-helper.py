@@ -177,7 +177,7 @@ def process_playlists():
 
 def process_channel_subscription(channel : ChannelSubscription):
     channel_url : str = channel.build_url()
-    print(f"Channel Identifier: {channel.identifier_type} {channel.identifier_value}")
+    print(f"Channel Identifier Type: [{channel.identifier_type.name}] Value: [{channel.identifier_value}]")
     channel : pytube.Channel = pytube.Channel(channel_url)
     print(f"Channel Name: [{channel.channel_name}] Id: [{channel.channel_id}] URL: [{channel_url}]")
     current_url : str
