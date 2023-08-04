@@ -14,8 +14,16 @@ import pytube
 
 from functools import cmp_to_key
 
-def get_playlists() -> list[str]: return os.getenv("PLAYLIST_LIST", "").split(",")
-def get_channel_names() -> list[str]: return os.getenv("CHANNEL_NAME_LIST", "").split(",")
+def clean_list(input_list : list[str]) -> list[str]:
+    result : list[str] = list()
+    curr : str
+    for curr in input_list if input_list and len(input_list) > 0 else []:
+        if curr and len(curr) > 0:
+            result.append(curr)
+    return result
+
+def get_playlists() -> list[str]: return clean_list(os.getenv("PLAYLIST_LIST", "").split(","))
+def get_channel_names() -> list[str]: return clean_list(os.getenv("CHANNEL_NAME_LIST", "").split(","))
 
 def get_max_resolution() -> str: return os.getenv("MAX_RESOLUTION", "1080")
 def get_output_format() -> str: return os.getenv("OUTPUT_FORMAT", "mkv")
