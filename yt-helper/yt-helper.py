@@ -6,6 +6,7 @@ import datetime
 
 from channel_subscription import ChannelSubscription
 from channel_identifier_type import ChannelIdentifierType
+from playlist import Playlist
 
 import persistence
 
@@ -143,27 +144,31 @@ def process_url(url : str):
         else:
             print(f"Skipping video at url [{url}], reason: [{skip_reason}]")
     else:
-        print(f"Video at url: [{url}] has been downloaded already.")
+        print(f"Video at URL: [{url}] has been downloaded already.")
 
 def build_playlist_url(playlist_id : str) -> str:
     return f"https://www.youtube.com/playlist?list={playlist_id}"
 
-def process_playlist(playlist : str):
-    playlist_url : str = build_playlist_url(playlist)
-    print(f"Playlist id: {playlist_url}")
-    playlist : pytube.Playlist = pytube.Playlist(playlist_url)
+def process_playlist(playlist : Playlist):
+
+    playlist_url : str = playlist.build_url()
+    print(f"Playlist Id: [{playlist.playlist_id}] URL: [{playlist_url}]")
+    pytube_playlist : pytube.Playlist = pytube.Playlist(playlist_url)
     # we cannot even read title if playlist is empty
     # so we are checking here
-    if playlist and len(playlist) > 0:
-        print(f"Playlist title: [{playlist.title}]")
-        url_list : list[str] = playlist.video_urls
+    if pytube_playlist and len(pytube_playlist) > 0:
+        print(f"Playlist title: [{pytube_playlist.title}]")
+        url_list : list[str] = pytube_playlist.video_urls
         url : str
         for url in url_list if url_list else []:
             print(f"Found url [{url}]")
             current_yt : pytube.YouTube = pytube.YouTube(url)
+            publish_date : datetime = current_yt.publish_date
             print(f"  Author: [{current_yt.author}]")
             print(f"  Title: [{current_yt.title}]")
-            print(f"  Publish_date: [{current_yt.publish_date.strftime('%Y-%m-%d') if current_yt.publish_date else None}]")
+            print(f"  Publish_date: [{publish_date.strftime('%Y-%m-%d') if publish_date else None}]")
+            if not playlist.is_publish_date_allowed(publish_date):
+                print(f"Video skipped, its date [{publish_date.strftime('%Y-%m-%d')}] is before the subscription start [{playlist.subscription_start.strftime('%Y-%m-%d')}]")
             process_url(url)
 
 def process_playlists():
@@ -171,7 +176,8 @@ def process_playlists():
     current : str
     for current in lst if lst else []:
         if current and len(current) > 0: 
-            process_playlist(current)
+            current_playlist : Playlist = Playlist.build(current)
+            process_playlist(current_playlist)
 
 def process_channel_subscription(channel : ChannelSubscription):
     channel_url : str = channel.build_url()
