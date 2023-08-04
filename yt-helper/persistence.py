@@ -12,19 +12,31 @@ def __get_connection() -> sqlite3.Connection:
             sqlite3.PARSE_COLNAMES)
     return connection
 
-def __prepare_table():
+def __prepare_table_downloads():
     cursor_obj = __connection.cursor()
     # Creating table
-    create_downloads_table : str = """
+    create_table : str = """
         CREATE TABLE IF NOT EXISTS downloads (
         download_url VARCHAR(255) PRIMARY KEY,
         download_date TIMESTAMP)
     """
-    cursor_obj.execute(create_downloads_table)
+    cursor_obj.execute(create_table)
+    cursor_obj.close()
+
+def __prepare_table_playlists():
+    cursor_obj = __connection.cursor()
+    # Creating table
+    create_table : str = """
+        CREATE TABLE IF NOT EXISTS playlists (
+        playlist_id VARCHAR(255) PRIMARY KEY,
+        date_limit VARCHAR(32))
+    """
+    cursor_obj.execute(create_table)
     cursor_obj.close()
 
 __connection : sqlite3.Connection = __get_connection()
-__prepare_table()
+__prepare_table_downloads()
+__prepare_table_playlists()
     
 def __get_downloads_by_url(url : str):
     cursor = __connection.cursor()
