@@ -23,9 +23,6 @@ class ChannelSubscription:
     @property   
     def subscription_start(self) -> str: return self.__subscription_start
     
-    def build_channel_name_url(channel_name : str) -> str:
-        return f"https://www.youtube.com/c/{channel_name}"
-
     def build_url(self):
         if self.identifier_type == ChannelIdentifierType.CHANNEL_NAME:
             return f"https://www.youtube.com/c/{self.identifier_value}"
