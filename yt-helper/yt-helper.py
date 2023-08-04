@@ -166,6 +166,9 @@ def process_playlist(playlist : Playlist):
             if not playlist.is_publish_date_allowed(publish_date):
                 print(f"Video skipped, its date [{publish_date.strftime('%Y-%m-%d')}] is before the subscription start [{playlist.subscription_start.strftime('%Y-%m-%d')}]")
             process_url(url)
+    else:
+        # empty playlist
+        print(f"Playlist is empty, nothing to do.")
 
 def process_playlists():
     lst : list[str] = get_playlists()
