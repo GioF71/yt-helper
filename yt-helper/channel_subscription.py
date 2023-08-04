@@ -10,9 +10,9 @@ class ChannelSubscription:
             identifier_type : ChannelIdentifierType,
             identifier_value : str,
             subscription_start : str):
-        self.__identifierType = identifier_type
-        self.__identifier_value = identifier_value
-        self.__subscription_start = subscription_start
+        self.__identifierType : ChannelIdentifierType = identifier_type
+        self.__identifier_value : str = identifier_value
+        self.__subscription_start : str = subscription_start
         
     @property
     def identifier_type(self) -> ChannelIdentifierType: return self.__identifierType
