@@ -4,7 +4,7 @@ class ChannelSubscription:
     
     # identifier_type: name or id
     # identifier_value: the name or the id of the channel
-    # subscription_start: a data, format is YYYY-MM-DD
+    # subscription_start: a date, format is YYYY-MM-DD
     
     def __init__(self, 
             identifier_type : ChannelIdentifierType,
