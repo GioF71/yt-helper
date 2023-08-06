@@ -31,7 +31,7 @@ def get_max_resolution() -> str: return os.getenv("MAX_RESOLUTION", "1080")
 def get_output_format() -> str: return os.getenv("OUTPUT_FORMAT", "mkv")
 
 def get_file_name_template() -> str:
-    return os.getenv("FILE_NAME_TEMPLATE", "%(uploader)s - %(upload_date>%Y-%m-%d)s - %(title)s.%(ext)s")
+    return os.getenv("FILE_NAME_TEMPLATE", "%(uploader)s - %(upload_date>%Y-%m-%d)s - %(title)s [%(id)s].%(ext)s")
 
 def get_subtype() -> str: return os.getenv("SUBTYPE", "mp4")
 
@@ -79,6 +79,7 @@ def process_url(url : str):
         if get_output_format(): params["merge_output_format"] = get_output_format()
         params["writethumbnail"] = False
         params["embedthumbnail"] = True
+        params["embedmetadata"] = True
         params["progress_hooks"] = [yt_dlp_monitor]
         pytube_yt : pytube.YouTube = pytube.YouTube(url)
         skip_video : bool = False
