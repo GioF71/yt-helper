@@ -102,7 +102,6 @@ def process_url(url : str):
                 yt.download(url)
                 # TODO add tags
                 persistence.store_download_url(url)
-                # TODO slugify filename
                 downloaded_file_name : str = file_name_by_url[url] if url in file_name_by_url else None
                 if downloaded_file_name:
                     do_rename : bool = False
