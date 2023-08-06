@@ -24,24 +24,30 @@ def clean_list(input_list : list[str]) -> list[str]:
             result.append(curr)
     return result
 
-def get_playlists() -> list[str]: return clean_list(os.getenv("PLAYLIST_LIST", "").split(","))
-def get_channel_names() -> list[str]: return clean_list(os.getenv("CHANNEL_NAME_LIST", "").split(","))
+def getenv_clean(env_name : str, env_default : any) -> any:
+    value : any = os.getenv(env_name)
+    if not value: value = env_default
+    if isinstance(value, str) and len(value) == 0: value = env_default
+    return value
 
-def get_max_resolution() -> str: return os.getenv("MAX_RESOLUTION", "1080")
-def get_output_format() -> str: return os.getenv("OUTPUT_FORMAT", "mkv")
+def get_playlists() -> list[str]: return clean_list(getenv_clean("PLAYLIST_LIST", "").split(","))
+def get_channel_names() -> list[str]: return clean_list(getenv_clean("CHANNEL_NAME_LIST", "").split(","))
+
+def get_max_resolution() -> str: return getenv_clean("MAX_RESOLUTION", "1080")
+def get_output_format() -> str: return getenv_clean("OUTPUT_FORMAT", "mkv")
 
 def get_file_name_template() -> str:
-    return os.getenv("FILE_NAME_TEMPLATE", "%(uploader)s - %(upload_date>%Y-%m-%d)s - %(title)s [%(id)s].%(ext)s")
+    return getenv_clean("FILE_NAME_TEMPLATE", "%(uploader)s - %(upload_date>%Y-%m-%d)s - %(title)s [%(id)s].%(ext)s")
 
-def get_subtype() -> str: return os.getenv("SUBTYPE", "mp4")
+def get_subtype() -> str: return getenv_clean("SUBTYPE", "mp4")
 
-def get_output_path() -> str: return os.getenv("OUTPUT_PATH", ".")
+def get_output_path() -> str: return getenv_clean("OUTPUT_PATH", ".")
 
 def is_loop_enabled() -> bool: return os.gentenv("ENABLE_LOOP", "1") == "1"
-def get_loop_wait_sec() -> int: return int(os.getenv("LOOP_WAIT_SEC", "300"))
-def is_slugify_enabled() -> bool: return os.getenv("SLUGIFY", "0") == "1"
-def is_printable_enabled() -> bool: return os.getenv("PRINTABLE", "1") == "1"
-def is_dir_per_channel_enabled() -> bool: return os.getenv("DIRECTORY_PER_CHANNEL", "0") == "1"
+def get_loop_wait_sec() -> int: return int(getenv_clean("LOOP_WAIT_SEC", "300"))
+def is_slugify_enabled() -> bool: return getenv_clean("SLUGIFY", "0") == "1"
+def is_printable_enabled() -> bool: return getenv_clean("PRINTABLE", "1") == "1"
+def is_dir_per_channel_enabled() -> bool: return getenv_clean("DIRECTORY_PER_CHANNEL", "0") == "1"
 
 def compare_str(left : str, right : str) -> int:
     if not left and not right: return 0
