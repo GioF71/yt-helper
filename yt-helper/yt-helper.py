@@ -39,8 +39,6 @@ def get_output_format() -> str: return getenv_clean("OUTPUT_FORMAT", "mkv")
 def get_file_name_template() -> str:
     return getenv_clean("FILE_NAME_TEMPLATE", "%(uploader)s - %(upload_date>%Y-%m-%d)s - %(title)s [%(id)s].%(ext)s")
 
-def get_subtype() -> str: return getenv_clean("SUBTYPE", "mp4")
-
 def get_output_path() -> str: return getenv_clean("OUTPUT_PATH", ".")
 
 def is_loop_enabled() -> bool: return os.gentenv("ENABLE_LOOP", "1") == "1"
