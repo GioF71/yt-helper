@@ -94,7 +94,7 @@ def process_url(url : str):
                 'key': 'MetadataParser',
                 'when': 'pre_process',
                 'actions': [
-                    (yt_dlp.MetadataParserPP.Actions.INTERPRET, 'title', r'(?s)(?P<meta_title>.+)'),
+                    (yt_dlp.MetadataParserPP.Actions.INTERPRET, '%(uploader)s - %(upload_date>%Y-%m-%d)s - %(title)s', r'(?s)(?P<meta_title>.+)'),
                     (yt_dlp.MetadataParserPP.Actions.INTERPRET, 'artist', r'(?s)(?P<meta_uploader>.+)'),
                     (yt_dlp.MetadataParserPP.Actions.INTERPRET, 'description', r'(?s)(?P<meta_comment>.+)'),
                     (yt_dlp.MetadataParserPP.Actions.INTERPRET, '%(upload_date>%Y)s', r'(?s)(?P<meta_date>.+)')
