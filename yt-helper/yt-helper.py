@@ -83,7 +83,8 @@ def process_url(url : str):
         if get_output_format(): params["merge_output_format"] = get_output_format()
         params["writethumbnail"] = False
         params["embedthumbnail"] = True
-        params["embedmetadata"] = True
+        params["addmetadata"] = True
+        params["parse_metadata"] = [ "%(title)s:%(meta_title)s", "%(uploader)s:%(meta_artist)s" ]
         params["progress_hooks"] = [yt_dlp_monitor]
         pytube_yt : pytube.YouTube = pytube.YouTube(url)
         skip_video : bool = False
