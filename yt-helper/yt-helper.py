@@ -81,10 +81,30 @@ def process_url(url : str):
         max_resolution : str = get_max_resolution()
         params["format"] = f"bv*[height<={max_resolution}]+ba" if max_resolution else f"bv+ba"
         if get_output_format(): params["merge_output_format"] = get_output_format()
-        params["writethumbnail"] = False
+        params["writethumbnail"] = True
         params["embedthumbnail"] = True
-        params["addmetadata"] = True
-        params["parse_metadata"] = [ "%(title)s:%(meta_title)s", "%(uploader)s:%(meta_artist)s" ]
+        #params["addmetadata"] = True
+        #params["embedmetadata"] = True
+        #params["parse_metadata"] = [ "%(title)s:%(meta_title)s", "%(uploader)s:%(meta_artist)s" ]
+        params["postprocessors"] = [
+            {
+                'key': 'FFmpegMetadata'
+            }, 
+            {       
+                'key': 'MetadataParser',
+                'when': 'pre_process',
+                'actions': [
+                    (yt_dlp.MetadataParserPP.Actions.INTERPRET, 'title', r'(?s)(?P<meta_title>.+)'),
+                    (yt_dlp.MetadataParserPP.Actions.INTERPRET, 'artist', r'(?s)(?P<meta_uploader>.+)'),
+                    (yt_dlp.MetadataParserPP.Actions.INTERPRET, 'description', r'(?s)(?P<meta_comment>.+)'),
+                    (yt_dlp.MetadataParserPP.Actions.INTERPRET, '%(upload_date>%Y)s', r'(?s)(?P<meta_date>.+)')
+                ]
+            },
+            { 
+                'key': 'EmbedThumbnail',
+                'already_have_thumbnail': False
+            }
+        ]
         params["progress_hooks"] = [yt_dlp_monitor]
         pytube_yt : pytube.YouTube = pytube.YouTube(url)
         skip_video : bool = False
@@ -98,7 +118,7 @@ def process_url(url : str):
             skip_reason = "Video is marked as \"upcoming\""
         if not skip_video:
             yt : yt_dlp.YoutubeDL = yt_dlp.YoutubeDL(params = params)
-            yt.add_post_processor(PostProcessor(), when='after_move')
+            #yt.add_post_processor(PostProcessor(), when='after_move')
             try:
                 yt.download(url)
                 # TODO add tags
