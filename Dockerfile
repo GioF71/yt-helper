@@ -6,8 +6,9 @@ RUN apt-get update && \
 
 WORKDIR /app
 
-COPY requirements.txt requirements.txt
-RUN pip3 install --no-cache-dir -r requirements.txt
+RUN pip install --upgrade pip
+COPY requirements.txt /app/requirements.txt
+RUN pip install --no-cache-dir -r /app/requirements.txt
 
 ENV PUID ""
 ENV PGID ""
