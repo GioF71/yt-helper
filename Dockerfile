@@ -1,14 +1,15 @@
 FROM python:3.9-slim
 
+WORKDIR /app
+
+RUN pip3 install --upgrade pip3
+RUN pip3 install wheel
+COPY requirements.txt /app/requirements.txt
+RUN pip3 install --no-cache-dir -r /app/requirements.txt
+
 RUN apt-get update && \
     apt-get -y install --no-install-recommends ffmpeg && \
     rm -rf /var/lib/apt/lists/*
-
-WORKDIR /app
-
-RUN pip install --upgrade pip
-COPY requirements.txt /app/requirements.txt
-RUN pip install --no-cache-dir -r /app/requirements.txt
 
 ENV PUID ""
 ENV PGID ""
