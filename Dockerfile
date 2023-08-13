@@ -2,10 +2,10 @@ FROM python:3.9-slim
 
 WORKDIR /app
 
-RUN pip3 install --upgrade pip3
-RUN pip3 install wheel
+RUN pip install --upgrade pip
+RUN pip install wheel
 COPY requirements.txt /app/requirements.txt
-RUN pip3 install --no-cache-dir -r /app/requirements.txt
+RUN pip install --no-cache-dir -r /app/requirements.txt
 
 RUN apt-get update && \
     apt-get -y install --no-install-recommends ffmpeg && \
