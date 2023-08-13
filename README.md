@@ -1,5 +1,7 @@
 # yt-helper
 
+Documentation is still a work in progress.
+
 ## Links
 
 Description|Link
@@ -14,6 +16,13 @@ Docker Images|https://hub.docker.com/repository/docker/giof71/yt-helper
 ## Configuration
 
 ### Environment Variables
+
+VARIABLE|DESCRIPTION
+:---|:---
+OUTPUT_PATH|Output directory
+PLAYLIST_LIST|Comma separated list of the playlists to be monitored
+CHANNEL_NAME_LIST|Comma separated list of the channels to be monitored
+
 
 ### Volumes
 
