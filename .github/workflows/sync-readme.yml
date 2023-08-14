@@ -22,4 +22,4 @@ jobs:
           pass: ${{ secrets.DOCKER_TOKEN }}
           slug: ${{ secrets.DOCKER_USERNAME }}/yt-helper
           readme: ./README.md
-          description: A simple SubSonic Scrobbler for MPD
+          description: YouTube Helper
