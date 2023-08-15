@@ -35,6 +35,14 @@ VARIABLE|DESCRIPTION
 OUTPUT_PATH|Output directory
 PLAYLIST_LIST|Comma separated list of the playlists to be monitored
 CHANNEL_NAME_LIST|Comma separated list of the channels to be monitored
+MAX_RESOLUTION|Max resolution used for download, defaults to `1080`
+FILE_NAME_TEMPLATE|Video file name naming template, defaults to `%(uploader)s - %(upload_date>%Y-%m-%d)s - %(title)s [%(id)s].%(ext)s`
+ENABLE_LOOP|Enable loop instead of exiting after the first cycle, defaults to `1`
+LOOP_WAIT_SEC|Loop interval in seconds, defaults to `300`
+OUTPUT_FORMAT|Output format of the downloaded file, defaults to `mkv`
+SLUGIFY|Transforms the file name to slugified version, defaults to `0`
+PRINTABLE|Process the filename in order to strip some special characters and reduce potential issues with file name restrictions
+DIRECTORY_PER_CHANNEL|If set to `1`, a directory will be created with the name of channel/uploader, defaults to `0`
 
 To be completed.
 
