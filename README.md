@@ -13,8 +13,13 @@ To be completed.
 
 ## References
 
-This portion of the documentation is still missing.
+This project relies on the following projects:
 
+PROJECT|LINK
+:---|:---
+yt-dlp|[GitHub Repo](https://github.com/yt-dlp/yt-dlp)
+pytube|[GitHub Repo](https://github.com/pytube/pytube)
+python-slugify|[GitHub Repo](https://github.com/un33k/python-slugify)
 
 ## Description
 
