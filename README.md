@@ -37,6 +37,8 @@ This portion of the documentation is still missing.
 
 VARIABLE|DESCRIPTION
 :---|:---
+PUID|User id of the user which will run the application, defaults to `1000`
+PGID|Group id of the user which will run the application, defaults to `1000`
 OUTPUT_PATH|Output directory
 PLAYLIST_LIST|Comma separated list of the ids of the playlists to be monitored
 CHANNEL_NAME_LIST|Comma separated list of the names of the channels to be monitored
@@ -53,7 +55,10 @@ To be completed.
 
 ### Volumes
 
-This portion of the documentation is still missing.
+VOLUME|DESCRIPTION
+:---|:--
+/db|Location for the sqlite database
+/downloads|Location for the downloaded files
 
 ### Examples
 
