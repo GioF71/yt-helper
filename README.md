@@ -1,12 +1,13 @@
 # yt-helper
 
-Documentation is still a work in progress.
+Welcome to `yt-helper`, a simple YouTube helper tool for downloading from playlists and channels.  
+The main purpose is make the videos I want to watch available to network shares, media servers, etc, as seamlessly as possible.  
 
 ## Links
 
 DESCRIPTION|LINK
 :---|:---
-Source Code|[GitHub](https://github.com/GioF71/yt-helper)
+Source Code|[GitHub Repo](https://github.com/GioF71/yt-helper)
 Docker Images|[Docker Hub](https://hub.docker.com/repository/docker/giof71/yt-helper)
 
 To be completed.
@@ -52,6 +53,22 @@ PRINTABLE|Process the filename in order to strip some special characters and red
 DIRECTORY_PER_CHANNEL|If set to `1`, a directory will be created with the name of channel/uploader, defaults to `0`
 
 Channels do not work (at least before the latest pytube update, which I have not tried yet), because the application always gets an empty list when trying to retrieve the list of video urls.
+
+#### Playlist format
+
+A playlist can be provided as is (just the id), or along with a start date which will be used to download videos published after the specified date. Example:
+
+`PLAYLIST_LIST=PL12345,PL23456`
+
+or
+
+`PLAYLIST_LIST=PL12345:2023-08-01,PL23456`
+
+When specifying the date, only videos published after (and including) August the 1st 2023 will be processed for playlist with id `PL12345`.
+
+#### Channel name format
+
+The considerations made for [Playlist Format](#playlist-format) apply, just replace the playlist id with the channel name.
 
 ### Volumes
 
