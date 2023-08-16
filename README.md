@@ -51,7 +51,7 @@ SLUGIFY|Transforms the file name to slugified version, defaults to `0`
 PRINTABLE|Process the filename in order to strip some special characters and reduce potential issues with file name restrictions
 DIRECTORY_PER_CHANNEL|If set to `1`, a directory will be created with the name of channel/uploader, defaults to `0`
 
-To be completed.
+Channels do not work (at least before the latest pytube update, which I have not tried yet), because the application always gets an empty list when trying to retrieve the list of video urls.
 
 ### Volumes
 
