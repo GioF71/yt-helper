@@ -57,7 +57,7 @@ Channels do not work (at least before the latest pytube update, which I have not
 
 VOLUME|DESCRIPTION
 :---|:--
-/db|Location for the sqlite database
+/db|Location for the sqlite database (will be named `yt.db`)
 /downloads|Location for the downloaded files
 
 ### Examples
