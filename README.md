@@ -65,7 +65,7 @@ or
 
 `PLAYLIST_LIST=PL12345:2023-08-01,PL23456`
 
-When specifying the date, only videos published after (and including) August 1st 2023 will be processed for playlist with id `PL12345`.
+When a date is specified, only videos published after, and including, the specified date (August 1st 2023 in the example) will be processed for the playlist with id `PL12345`.
 
 #### Channel name format
 
