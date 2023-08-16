@@ -6,7 +6,7 @@ Documentation is still a work in progress.
 
 DESCRIPTION|LINK
 :---|:---
-Git Repo|[GitHub](https://github.com/GioF71/yt-helper)
+Source Code|[GitHub](https://github.com/GioF71/yt-helper)
 Docker Images|[Docker Hub](https://hub.docker.com/repository/docker/giof71/yt-helper)
 
 To be completed.
