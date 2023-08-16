@@ -40,7 +40,7 @@ VARIABLE|DESCRIPTION
 PUID|User id of the user which will run the application, defaults to `1000`
 PGID|Group id of the user which will run the application, defaults to `1000`
 OUTPUT_PATH|Output directory
-PLAYLIST_LIST|Comma separated list of the ids of the playlists to be monitored
+PLAYLIST_LIST|Comma separated list of the ids of the playlists (which must be public) to be monitored
 CHANNEL_NAME_LIST|Comma separated list of the names of the channels to be monitored
 MAX_RESOLUTION|Max resolution used for download, defaults to `1080`
 FILE_NAME_TEMPLATE|Video file name naming template, defaults to `%(uploader)s - %(upload_date>%Y-%m-%d)s - %(title)s [%(id)s].%(ext)s`
