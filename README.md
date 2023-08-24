@@ -28,7 +28,7 @@ Already downloaded videos will not be downloaded again.
 
 ## Installation
 
-The preferred way to install the application is via docker. See the [£xamples](#examples) section.  
+The preferred way to install the application is via docker. See the [Examples](#examples) section.  
 Of course, you can start the python application `yt-helper.py` directly, and/or create a systemd service if you prefer to do so.
 
 ## Configuration
