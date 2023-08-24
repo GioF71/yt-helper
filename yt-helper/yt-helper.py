@@ -213,6 +213,7 @@ def process_channel_subscription(channel : ChannelSubscription):
     current_url : str
     for current_url in channel.video_urls:
         print(f"Found video at url [{current_url}]")
+        process_url(current_url)
         
 def process_channels_names():
     subscription_list : list[ChannelSubscription] = list()
