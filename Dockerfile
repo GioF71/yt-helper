@@ -2,14 +2,15 @@ FROM python:3.9-slim
 
 WORKDIR /app
 
-RUN pip install --upgrade pip
-RUN pip install wheel
 COPY requirements.txt /app/requirements.txt
-RUN pip install --no-cache-dir -r /app/requirements.txt
 
 RUN apt-get update && \
-    apt-get -y install --no-install-recommends ffmpeg && \
+    apt-get -y install --no-install-recommends ffmpeg git && \
     rm -rf /var/lib/apt/lists/*
+
+RUN pip install --no-cache-dir --upgrade pip
+#RUN pip install --no-cache-dir wheel
+RUN pip install --no-cache-dir -r /app/requirements.txt
 
 ENV PUID ""
 ENV PGID ""
