@@ -10,8 +10,6 @@ DESCRIPTION|LINK
 Source Code|[GitHub Repo](https://github.com/GioF71/yt-helper)
 Docker Images|[Docker Hub](https://hub.docker.com/repository/docker/giof71/yt-helper)
 
-To be completed.
-
 ## References
 
 This project relies on the following projects:
@@ -24,23 +22,27 @@ python-slugify|[GitHub Repo](https://github.com/un33k/python-slugify)
 
 ## Description
 
-This portion of the documentation is still missing.
+This is a simple video downloader, it will rely on pytube and yt-dlp (see [References](#references) for details).  
+By defaults, it will monitor the provided playlists and try to download new videos every 300 seconds.  
+Already downloaded videos will not be downloaded again.  
 
 ## Installation
 
-This portion of the documentation is still missing.
+The preferred way to install the application is via docker. See the [£xamples](#examples) section.  
+Of course, you can start the python application `yt-helper.py` directly, and/or create a systemd service if you prefer to do so.
 
 ## Configuration
 
-This portion of the documentation is still missing.
+At the current stage of development, the configuration is done using environment variables and volumes using Docker.  
 
 ### Environment Variables
 
 VARIABLE|DESCRIPTION
 :---|:---
+OUTPUT_PATH|Output directory, it is set to `/downloads` if you use docker. Otherwise, be sure to set to an appropriate path
+DB_FILE|Database location, it is set to `/db/yt.db` if you use docker. Otherwise, be sure to set to an appropriate path
 PUID|User id of the user which will run the application, defaults to `1000`
 PGID|Group id of the user which will run the application, defaults to `1000`
-OUTPUT_PATH|Output directory
 PLAYLIST_LIST|Comma separated list of the ids of the playlists (which must be public) to be monitored
 CHANNEL_NAME_LIST|Comma separated list of the names of the channels to be monitored
 MAX_RESOLUTION|Max resolution used for download, defaults to `1080`
@@ -71,7 +73,7 @@ When a date is specified, only videos published after, and including, the specif
 
 The considerations made for [Playlist Format](#playlist-format) apply, just replace the playlist id with the channel name.
 
-### Volumes
+#### Volumes
 
 VOLUME|DESCRIPTION
 :---|:--
