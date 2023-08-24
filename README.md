@@ -80,6 +80,9 @@ VOLUME|DESCRIPTION
 
 ### Examples
 
+Here is a simple docker compose file. The commented variables are optional.  
+You will need to replace `PLxx1`, `PLxx2`, `PLxx3` as well as the channel name(s) with your playlists and/or channel names.  
+
 ```text
 ---
 version: '3'
@@ -93,8 +96,8 @@ services:
       - ./downloads:/downloads
     environment:
       - TZ=Europe/Rome
-      - PUID=1000
-      - PGID=1000
+      #- PUID=1000
+      #- PGID=1000
       #- LOOP_WAIT_SEC=300
       #- FILE_NAME_TEMPLATE=%(uploader)s - %(upload_date>%Y-%m-%d)s - %(title)s [%(id)s].%(ext)s
       #- DIRECTORY_PER_CHANNEL=0
