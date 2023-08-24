@@ -80,4 +80,25 @@ VOLUME|DESCRIPTION
 
 ### Examples
 
-This portion of the documentation is still missing.
+```text
+---
+version: '3'
+
+services:
+  yt-helper:
+    container_name: yt-helper
+    image: giof71/yt-helper:latest
+    volumes:
+      - ./db:/db
+      - ./downloads:/downloads
+    environment:
+      - TZ=Europe/Rome
+      - PUID=1000
+      - PGID=1000
+      #- LOOP_WAIT_SEC=300
+      #- FILE_NAME_TEMPLATE=%(uploader)s - %(upload_date>%Y-%m-%d)s - %(title)s [%(id)s].%(ext)s
+      #- DIRECTORY_PER_CHANNEL=0
+      - PLAYLIST_LIST=PLxx1,PLxx2,PLxx3
+      - CHANNEL_NAME_LIST=ANiceChannel:2023-07-27
+    restart: unless-stopped
+```
