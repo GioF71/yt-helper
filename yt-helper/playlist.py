@@ -6,15 +6,19 @@ class Playlist:
     # playlist_id: the name or the id of the channel
     # subscription_start: a date, format is YYYY-MM-DD
     __format : str = "%d-%m-%Y"
+
+    __key_id : str = "id"
+    __key_subscription_start : str = "subscription_start"
     
-    def build(playlist_str : str):
-        playlist_id : str = None
-        subscription_start : str = None
-        subscription_start_cnv : datetime = None
-        if ":" in playlist_str:
-            playlist_id, subscription_start = playlist_str.split(":")
-        else:
-            playlist_id = playlist_str
+    def build(playlist_dict : dict[str, str]):
+        # keys
+        #   id mandatory
+        #   subscription_start optional
+        if not Playlist.__key_id in playlist_dict: raise Exception(f"Missing mandatory key {Playlist.__key_id}")
+        playlist_id : str = playlist_dict["id"]
+        subscription_start : str = (playlist_dict[Playlist.__key_subscription_start] 
+            if Playlist.__key_subscription_start in playlist_dict 
+            else None)
         subscription_start_cnv = Playlist.__convert_date(subscription_start)
         return Playlist(playlist_id, subscription_start_cnv)
 

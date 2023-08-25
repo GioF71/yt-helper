@@ -9,6 +9,7 @@ from channel_identifier_type import ChannelIdentifierType
 from playlist import Playlist
 
 import persistence
+import variable_processor
 
 import yt_dlp
 import slugify
@@ -26,13 +27,15 @@ def clean_list(input_list : list[str]) -> list[str]:
             result.append(curr)
     return result
 
-def getenv_clean(env_name : str, env_default : any) -> any:
+def getenv_clean(env_name : str, env_default : any = None) -> any:
     value : any = os.getenv(env_name)
     if not value: value = env_default
     if isinstance(value, str) and len(value) == 0: value = env_default
     return value
 
-def get_playlists() -> list[str]: return clean_list(getenv_clean("PLAYLIST_LIST", "").split(","))
+def get_playlists() -> list[dict[str, str]]:
+    return variable_processor.process_variable("PLAYLIST_LIST")
+
 def get_channel_names() -> list[str]: return clean_list(getenv_clean("CHANNEL_NAME_LIST", "").split(","))
 
 def get_max_resolution() -> str: return getenv_clean("MAX_RESOLUTION", "1080")
@@ -198,12 +201,11 @@ def process_playlist(playlist : Playlist):
         print(f"Playlist is empty, nothing to do.")
 
 def process_playlists():
-    lst : list[str] = get_playlists()
-    current : str
-    for current in lst if lst else []:
-        if current and len(current) > 0: 
-            current_playlist : Playlist = Playlist.build(current)
-            process_playlist(current_playlist)
+    all_playlists : list[dict[str, str]] = get_playlists()
+    current_pl : dict[str, str]
+    for current_pl in all_playlists if all_playlists else []:
+        current_playlist : Playlist = Playlist.build(current_pl)
+        process_playlist(current_playlist)
 
 def process_channel_subscription(channel : ChannelSubscription):
     channel_url : str = channel.build_url()
@@ -242,12 +244,11 @@ def process_channel_subscription_list(lst : list[ChannelSubscription]):
         process_channel_subscription(current)
 
 def store_env_playlists():
-    lst : list[str] = get_playlists()
-    current : str
-    for current in lst if lst else []:
-        if current and len(current) > 0: 
-            current : Playlist = Playlist.build(current)
-            persistence.store_playlist(current)
+    all_playlists : list[dict[str, str]] = get_playlists()
+    current_pl : dict[str, str]
+    for current_pl in all_playlists if all_playlists else []:
+        current_playlist : Playlist = Playlist.build(current_pl)
+        persistence.store_playlist(current_playlist)
 
 def store_env_channels():
     lst : list[str] = get_channel_names()
