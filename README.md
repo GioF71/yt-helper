@@ -73,6 +73,12 @@ Alternatively, we can use a list of dictionaries, using the separator ";" betwee
 `PLAYLIST_LIST=id=PL12345;subscription_start=2023-08-01,id=PL23456`
 
 This adds the flexibility to specify different properties for each playlist, for future use.  
+Currently support field names:
+
+NAME|Description
+:---|:---
+id|Playlist id
+subscription_start|The minimum date for download
 
 #### Channel name format
 
