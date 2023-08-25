@@ -106,13 +106,18 @@ class PostProcessor(yt_dlp.postprocessor.PostProcessor):
 def as_printable(s : str) -> str:
     return ''.join([str(char) for char in s if char in string.printable])
 
-def process_url(url : str):
+def get_output_format_from_options(options : dict[str, str]) -> str:
+    if "output_format" in options: return options["output_format"]
+    return get_output_format()
+
+def process_url(url : str, options : dict[str, str] = {}):
     if not persistence.has_been_downloaded(url):
         params : dict[str, any] = dict()
         params["outtmpl"] = os.path.join(get_output_path(), get_file_name_template())
         max_resolution : str = get_max_resolution()
         params["format"] = f"bv*[height<={max_resolution}]+ba" if max_resolution else f"bv+ba"
-        if get_output_format(): params["merge_output_format"] = get_output_format()
+        output_format : str = get_output_format_from_options(options)
+        if output_format: params["merge_output_format"] = output_format
         params["writethumbnail"] = True
         params["embedthumbnail"] = True
         #params["addmetadata"] = True
@@ -222,7 +227,7 @@ def process_playlist(playlist : Playlist):
             print(f"  Publish_date: [{publish_date.strftime('%Y-%m-%d') if publish_date else None}]")
             if not playlist.is_publish_date_allowed(publish_date):
                 print(f"Video skipped, its date [{publish_date.strftime('%Y-%m-%d')}] is before the subscription start [{playlist.subscription_start.strftime('%Y-%m-%d')}]")
-            process_url(url)
+            process_url(url, playlist.dictionary)
     else:
         # empty playlist
         print(f"Playlist is empty, nothing to do.")
