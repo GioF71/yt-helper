@@ -67,7 +67,12 @@ or
 
 `PLAYLIST_LIST=PL12345:2023-08-01,PL23456`
 
-When a date is specified, only videos published after, and including, the specified date (August 1st 2023 in the example) will be processed for the playlist with id `PL12345`.
+When a date is specified, only videos published after, and including, the specified date (August 1st 2023 in the example) will be processed for the playlist with id `PL12345`.  
+Alternatively, we can use a list of dictionaries, using the separator ";" between playlist property pairs and the separator "=" as the assignment operator. The previous example would become:
+
+`PLAYLIST_LIST=id=PL12345;subscription_start=2023-08-01,id=PL23456`
+
+This adds the flexibility to specify different properties for each playlist, for future use.  
 
 #### Channel name format
 
