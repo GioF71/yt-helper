@@ -1,5 +1,5 @@
-#import dateutil
 import datetime
+import util
 
 class Playlist:
     
@@ -19,7 +19,7 @@ class Playlist:
         subscription_start : str = (playlist_dict[Playlist.__key_subscription_start] 
             if Playlist.__key_subscription_start in playlist_dict 
             else None)
-        subscription_start_cnv = Playlist.__convert_date(subscription_start)
+        subscription_start_cnv = util.convert_date(subscription_start)
         return Playlist(playlist_id, subscription_start_cnv)
 
     def __init__(self, 
@@ -27,18 +27,6 @@ class Playlist:
             subscription_start : datetime = None):
         self.__playlist_id : str = playlist_id
         self.__subscription_start : datetime = subscription_start
-
-    def __convert_date(in_date : str) -> datetime:
-        if not in_date: return None
-        try:
-            y : str
-            m : str
-            d : str
-            y, m, d = in_date.split("-")
-            return datetime.datetime(int(y),int(m),int(d))
-        except ValueError:
-            raise Exception(f"Invalid date string [{in_date}], format must be YYYY-mm-dd")
-
 
     @property   
     def playlist_id(self) -> str: return self.__playlist_id
