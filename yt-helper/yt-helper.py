@@ -24,8 +24,12 @@ pair_separator : str = ";"
 pair_eq : str = "="
 
 legacy_item_separator : str = ":"
-playlist_legacy_item_list : list[str] = ["id", "subscription_start"]
+
 playlist_single_value_key : str = "id"
+playlist_legacy_item_list : list[str] = ["id", "subscription_start"]
+
+channel_name_single_value_key : str = "name"
+channel_name_legacy_item_list : list[str] = ["name", "subscription_start"]
 
 def clean_list(input_list : list[str]) -> list[str]:
     result : list[str] = list()
@@ -51,7 +55,15 @@ def get_playlists() -> list[dict[str, str]]:
         legacy_item_separator = legacy_item_separator,
         legacy_item_list = playlist_legacy_item_list)
 
-def get_channel_names() -> list[str]: return clean_list(getenv_clean("CHANNEL_NAME_LIST", "").split(","))
+def get_channel_names() -> list[dict[str, str]]:
+    return variable_processor.process_variable(
+        env_variable_name = "CHANNEL_NAME_LIST",
+        list_separator = list_separator,
+        pair_separator = pair_separator,
+        pair_eq = pair_eq,
+        single_value_key = channel_name_single_value_key,
+        legacy_item_separator = legacy_item_separator,
+        legacy_item_list = channel_name_legacy_item_list)
 
 def get_max_resolution() -> str: return getenv_clean("MAX_RESOLUTION", "1080")
 def get_output_format() -> str: return getenv_clean("OUTPUT_FORMAT", "mkv")
@@ -234,23 +246,11 @@ def process_channel_subscription(channel : ChannelSubscription):
         
 def process_channels_names():
     subscription_list : list[ChannelSubscription] = list()
-    c_list : list[str] = get_channel_names()
-    for ch_name in c_list if c_list else []:
-        print(f"Processing channel [{ch_name}] ...")
-        if ch_name and len(ch_name) > 0:
-            identifier : str = None
-            subscription_start : str = None
-            if ":" in ch_name:
-                identifier, subscription_start = ch_name.split(":")
-            else:
-                identifier = ch_name
-            if not subscription_start:
-                subscription_start = datetime.datetime.today().strftime('%Y-%m-%d')
-            ch_subscription : ChannelSubscription = ChannelSubscription(
-                ChannelIdentifierType.CHANNEL_NAME, 
-                identifier, 
-                subscription_start)
-            subscription_list.append(ch_subscription)
+    all_channel_names : list[dict[str, str]] = get_channel_names()
+    current : dict[str, str]
+    for current in all_channel_names if all_channel_names else []:
+        current_channel : ChannelSubscription = ChannelSubscription.build_by_name(current)
+        subscription_list.append(current_channel)
     process_channel_subscription_list(subscription_list)
         
 def process_channel_subscription_list(lst : list[ChannelSubscription]):
@@ -266,12 +266,11 @@ def store_env_playlists():
         persistence.store_playlist(current_playlist)
 
 def store_env_channels():
-    lst : list[str] = get_channel_names()
-    current : str
-    for current in lst if lst else []:
-        if current and len(current) > 0: 
-            channel : ChannelSubscription = ChannelSubscription.build_by_name(current)
-            persistence.store_channel(channel)
+    all_channel_names : list[dict[str, str]] = get_channel_names()
+    current : dict[str, str]
+    for current in all_channel_names if all_channel_names else []:
+        current_channel : ChannelSubscription = ChannelSubscription.build_by_name(current)
+        persistence.store_channel(current_channel)
 
 def main():
     print(f"yt-helper, version [{app_version}]")
