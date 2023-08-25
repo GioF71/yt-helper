@@ -15,15 +15,7 @@ class Playlist:
             playlist_id, subscription_start = playlist_str.split(":")
         else:
             playlist_id = playlist_str
-        if subscription_start:
-            try:
-                y : str
-                m : str
-                d : str
-                y, m, d = subscription_start.split("-")
-                subscription_start_cnv = datetime.datetime(int(y),int(m),int(d))
-            except ValueError:
-                raise Exception(f"Invalid date string [{subscription_start}], format must be YYYY-mm-dd")
+        subscription_start_cnv = Playlist.__convert_date(subscription_start)
         return Playlist(playlist_id, subscription_start_cnv)
 
     def __init__(self, 
@@ -32,7 +24,7 @@ class Playlist:
         self.__playlist_id : str = playlist_id
         self.__subscription_start : datetime = subscription_start
 
-    def convert_date(self, in_date : str) -> datetime:
+    def __convert_date(in_date : str) -> datetime:
         if not in_date: return None
         try:
             y : str
