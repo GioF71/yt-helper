@@ -17,7 +17,7 @@ import pytube
 
 from functools import cmp_to_key
 
-app_version : str = "0.0.1-alpha2"
+app_version : str = "0.0.1-alpha3"
 
 def clean_list(input_list : list[str]) -> list[str]:
     result : list[str] = list()
@@ -259,6 +259,7 @@ def store_env_channels():
             persistence.store_channel(channel)
 
 def main():
+    print(f"yt-helper, version [{app_version}]")
     store_env_channels()
     store_env_playlists()
     while True:
