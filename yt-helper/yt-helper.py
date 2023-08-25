@@ -17,7 +17,7 @@ import pytube
 
 from functools import cmp_to_key
 
-app_version : str = "0.0.1-alpha3"
+app_version : str = "0.0.1-alpha4"
 
 def clean_list(input_list : list[str]) -> list[str]:
     result : list[str] = list()
