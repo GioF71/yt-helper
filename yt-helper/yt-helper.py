@@ -15,9 +15,11 @@ import yt_dlp
 import slugify
 import pytube
 
-from functools import cmp_to_key
 from config import Config
 from default_config import DefaultConfig
+from config_key import ConfigKey
+
+from functools import cmp_to_key
 
 app_version : str = "0.0.1-alpha4"
 
@@ -107,9 +109,9 @@ class PostProcessor(yt_dlp.postprocessor.PostProcessor):
 def as_printable(s : str) -> str:
     return ''.join([str(char) for char in s if char in string.printable])
 
-def get_output_format_from_options(options : dict[str, str]) -> str:
-    if "output_format" in options: return options["output_format"]
-    return app_config.get_output_format()
+def get_config_from_options(config_key : ConfigKey, options : dict[str, str]) -> str:
+    if config_key.key_name.lower() in options: return options[config_key.key_name.lower()]
+    return app_config.get_value(config_key.key_name)
 
 def process_url(url : str, options : dict[str, str] = {}):
     if not persistence.has_been_downloaded(url):
@@ -117,7 +119,7 @@ def process_url(url : str, options : dict[str, str] = {}):
         params["outtmpl"] = os.path.join(get_output_path(), get_file_name_template())
         max_resolution : str = app_config.get_max_resolution()
         params["format"] = f"bv*[height<={max_resolution}]+ba" if max_resolution else f"bv+ba"
-        output_format : str = get_output_format_from_options(options)
+        output_format : str = get_config_from_options(ConfigKey.OUTPUT_FORMAT, options)
         if output_format: params["merge_output_format"] = output_format
         params["writethumbnail"] = True
         params["embedthumbnail"] = True
