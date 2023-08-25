@@ -16,8 +16,12 @@ import slugify
 import pytube
 
 from functools import cmp_to_key
+from config import Config
+from default_config import DefaultConfig
 
 app_version : str = "0.0.1-alpha4"
+
+app_config : Config = DefaultConfig()
 
 list_separator : str = ","
 pair_separator : str = ";"
@@ -65,9 +69,6 @@ def get_channel_names() -> list[dict[str, str]]:
         legacy_item_separator = legacy_item_separator,
         legacy_item_list = channel_name_legacy_item_list)
 
-def get_max_resolution() -> str: return getenv_clean("MAX_RESOLUTION", "1080")
-def get_output_format() -> str: return getenv_clean("OUTPUT_FORMAT", "mkv")
-
 def get_file_name_template() -> str:
     return getenv_clean("FILE_NAME_TEMPLATE", "%(uploader)s - %(upload_date>%Y-%m-%d)s - %(title)s [%(id)s].%(ext)s")
 
@@ -108,13 +109,13 @@ def as_printable(s : str) -> str:
 
 def get_output_format_from_options(options : dict[str, str]) -> str:
     if "output_format" in options: return options["output_format"]
-    return get_output_format()
+    return app_config.get_output_format()
 
 def process_url(url : str, options : dict[str, str] = {}):
     if not persistence.has_been_downloaded(url):
         params : dict[str, any] = dict()
         params["outtmpl"] = os.path.join(get_output_path(), get_file_name_template())
-        max_resolution : str = get_max_resolution()
+        max_resolution : str = app_config.get_max_resolution()
         params["format"] = f"bv*[height<={max_resolution}]+ba" if max_resolution else f"bv+ba"
         output_format : str = get_output_format_from_options(options)
         if output_format: params["merge_output_format"] = output_format
