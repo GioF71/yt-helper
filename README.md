@@ -78,8 +78,8 @@ This adds the flexibility to specify different properties for each playlist, for
 
 KEY|DESCRIPTION
 :---|:---
-id|Playlist id
-subscription_start|The minimum date for download
+id|Playlist id (mandatory)
+subscription_start|The minimum date for download (optional)
 
 #### Channel name format
 
@@ -89,8 +89,8 @@ The considerations made for [Playlist Format](#playlist-format) apply, just repl
 
 KEY|DESCRIPTION
 :---|:---
-name|Channel name
-subscription_start|The minimum date for download
+name|Channel name (mandatory)
+subscription_start|The minimum date for download (optional)
 
 #### Volumes
 
