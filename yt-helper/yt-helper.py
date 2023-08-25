@@ -19,6 +19,14 @@ from functools import cmp_to_key
 
 app_version : str = "0.0.1-alpha4"
 
+list_separator : str = ","
+pair_separator : str = ";"
+pair_eq : str = "="
+
+legacy_item_separator : str = ":"
+playlist_legacy_item_list : list[str] = ["id", "subscription_start"]
+playlist_single_value_key : str = "id"
+
 def clean_list(input_list : list[str]) -> list[str]:
     result : list[str] = list()
     curr : str
@@ -34,7 +42,14 @@ def getenv_clean(env_name : str, env_default : any = None) -> any:
     return value
 
 def get_playlists() -> list[dict[str, str]]:
-    return variable_processor.process_variable("PLAYLIST_LIST")
+    return variable_processor.process_variable(
+        env_variable_name = "PLAYLIST_LIST",
+        list_separator = list_separator,
+        pair_separator = pair_separator,
+        pair_eq = pair_eq,
+        single_value_key = playlist_single_value_key,
+        legacy_item_separator = legacy_item_separator,
+        legacy_item_list = playlist_legacy_item_list)
 
 def get_channel_names() -> list[str]: return clean_list(getenv_clean("CHANNEL_NAME_LIST", "").split(","))
 

@@ -2,12 +2,12 @@ import os
 
 def process_variable(
         env_variable_name : str, 
-        list_separator : str = ",",
-        pair_separator : str = ";",
-        pair_eq : str = "=",
-        single_value_key : str = "id",
-        legacy_item_separator : str = ":", 
-        legacy_item_list : list[str] = ["id", "subscription_start"]) -> list[dict[str, str]]:
+        list_separator : str,
+        pair_separator : str,
+        pair_eq : str,
+        single_value_key : str,
+        legacy_item_separator : str, 
+        legacy_item_list : list[str]) -> list[dict[str, str]]:
     result_list : list[dict[str, str]] = list()
     env_value_list : str = os.getenv(env_variable_name, "")
     if env_value_list and len(env_value_list) > 0:

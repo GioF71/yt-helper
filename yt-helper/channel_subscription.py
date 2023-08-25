@@ -1,4 +1,5 @@
 import datetime
+import util
 
 from channel_identifier_type import ChannelIdentifierType
 
@@ -16,16 +17,8 @@ class ChannelSubscription:
             identifier_value, subscription_start = channel_name.split(":")
         else:
             identifier_value = channel_name
-        if subscription_start:
-            try:
-                y : str
-                m : str
-                d : str
-                y, m, d = subscription_start.split("-")
-                subscription_start = datetime.datetime(int(y),int(m),int(d))
-            except ValueError:
-                raise Exception(f"Invalid date string [{subscription_start}], format must be YYYY-mm-dd")
-        return ChannelSubscription(identifier_type, identifier_value, subscription_start)
+        subscription_start_cnv = util.convert_date(subscription_start)
+        return ChannelSubscription(identifier_type, identifier_value, subscription_start_cnv)
 
     def __init__(self, 
             identifier_type : ChannelIdentifierType,
