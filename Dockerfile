@@ -23,7 +23,7 @@ RUN apt-get update && \
 RUN pip install --no-cache-dir --upgrade pip
 RUN pip install --no-cache-dir -r /app/requirements.txt
 
-RUN if [ -n "${APT_PROXY}" = "Y" ]; then \
+RUN if [ -n "${APT_PROXY}" ]; then \
         rm /etc/apt/apt.conf.d/01-apt-proxy; \
     fi
 
