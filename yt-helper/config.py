@@ -10,3 +10,4 @@ class Config:
     def get_loop_wait_sec(self) -> int: pass
     def get_slugify(self) -> bool: pass
     def get_directory_per_channel(self) -> bool: pass
+    def get_full_date_format(self) -> bool: pass

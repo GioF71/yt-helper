@@ -126,6 +126,7 @@ def process_url(url : str, options : dict[str, str] = {}):
         #params["addmetadata"] = True
         #params["embedmetadata"] = True
         #params["parse_metadata"] = [ "%(title)s:%(meta_title)s", "%(uploader)s:%(meta_artist)s" ]
+        meta_date_format : str = '%(upload_date>%Y-%m-%d)s' if get_config_from_options(ConfigKey.FULL_DATE_FORMAT, options) == "1" else '%(upload_date>%Y)s'
         params["postprocessors"] = [
             {
                 'key': 'FFmpegMetadata'
@@ -137,7 +138,7 @@ def process_url(url : str, options : dict[str, str] = {}):
                     (yt_dlp.MetadataParserPP.Actions.INTERPRET, '%(uploader)s - %(upload_date>%Y-%m-%d)s - %(title)s', r'(?s)(?P<meta_title>.+)'),
                     (yt_dlp.MetadataParserPP.Actions.INTERPRET, 'artist', r'(?s)(?P<meta_uploader>.+)'),
                     (yt_dlp.MetadataParserPP.Actions.INTERPRET, 'description', r'(?s)(?P<meta_comment>.+)'),
-                    (yt_dlp.MetadataParserPP.Actions.INTERPRET, '%(upload_date>%Y-%m-%d)s', r'(?s)(?P<meta_date>.+)')
+                    (yt_dlp.MetadataParserPP.Actions.INTERPRET, meta_date_format, r'(?s)(?P<meta_date>.+)')
                 ]
             },
             { 

@@ -42,3 +42,6 @@ class DefaultConfig(Config):
 
     def get_directory_per_channel(self) -> bool:
         return self.get_value(ConfigKey.DIRECTORY_PER_CHANNEL.key_name) == "1"
+    
+    def get_full_date_format(self) -> bool:
+        return self.get_value(ConfigKey.FULL_DATE_FORMAT.key_name) == "1"
