@@ -1,4 +1,16 @@
 FROM python:3.9-slim
+ARG APT_PROXY
+
+RUN echo $APT_PROXY
+
+RUN if [ -n "${APT_PROXY}" ]; then \
+        echo "Builind using apt proxy"; \
+        echo "Acquire::http::proxy \"${APT_PROXY}\";" >> /etc/apt/apt.conf.d/01-apt-proxy; \
+        echo "Acquire::https::proxy \"DIRECT\";" >> /etc/apt/apt.conf.d/01-apt-proxy; \
+        cat /etc/apt/apt.conf.d/01-apt-proxy; \
+    else \
+        echo "Building without apt proxy"; \
+    fi
 
 WORKDIR /app
 
@@ -9,8 +21,11 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 RUN pip install --no-cache-dir --upgrade pip
-#RUN pip install --no-cache-dir wheel
 RUN pip install --no-cache-dir -r /app/requirements.txt
+
+RUN if [ -n "${APT_PROXY}" = "Y" ]; then \
+        rm /etc/apt/apt.conf.d/01-apt-proxy; \
+    fi
 
 ENV PUID ""
 ENV PGID ""
