@@ -10,7 +10,7 @@ class ConfigKey(Enum):
     LOOP_WAIT_SEC = 5, "LOOP_WAIT_SEC", "300"
     SLUGIFY = 6, "SLUGIFY", "0"
     DIRECTORY_PER_CHANNEL = 7, "DIRECTORY_PER_CHANNEL", "0"
-    FULL_DATE_FORMAT = 8, "FULL_DATE_FORMAT", "0"
+    FULL_DATE_FORMAT = 8, "FULL_DATE_FORMAT", "1"
         
     def __init__(self, 
             num : int, 
