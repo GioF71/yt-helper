@@ -21,7 +21,7 @@ from config_key import ConfigKey
 
 from functools import cmp_to_key
 
-app_version : str = "0.0.1-alpha4"
+app_version : str = "0.0.1-alpha5"
 
 app_config : Config = DefaultConfig()
 
